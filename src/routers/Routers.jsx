@@ -3,7 +3,7 @@ import App from "../App.jsx";
 import NotFound from "../components/NotFound.jsx";
 import {GoogleOAuthProvider} from "@react-oauth/google";
 import googleClientConfig from "../configs/googleClientConfig.js";
-import {arenaRoutes, guestRoutes, userRoutes, adminRoutes} from "./listRouters.js";
+import {arenaRoutes, guestRoutes, userRoutes, adminRoutes, matchingRoutes} from "./listRouters.js";
 import PrivateRoute from "../utils/PrivateRoute.js";
 import Study from "../pages/on-study/Study.jsx";
 import Exam from "../pages/exam/Exam.jsx";
@@ -71,6 +71,28 @@ const AppRouter = () => {
 
                         <Route path="/user" element={<App/>}>
                             {userRoutes.map((route, index) => {
+                                if (route.private) {
+                                    return (
+                                        <Route
+                                            key={index}
+                                            path={route.path}
+                                            element={<PrivateRoute element={route.component}/>}
+                                        />
+                                    );
+                                }
+
+                                return (
+                                    <Route
+                                        key={index}
+                                        path={route.path}
+                                        element={route.component}
+                                    />
+                                );
+                            })}
+                        </Route>
+
+                        <Route path="/matching">
+                            {matchingRoutes.map((route, index) => {
                                 if (route.private) {
                                     return (
                                         <Route

@@ -20,6 +20,7 @@ import Star from "../../components/ts/Button/Star";
 import Modal from 'react-bootstrap/Modal';
 import {Button, Form} from "react-bootstrap";
 import * as emailjs from "emailjs-com";
+import { MdCompareArrows } from "react-icons/md";
 import {useDeadline} from "src/context/DeadlineContext.jsx";
 
 const ViewSet = () => {
@@ -665,6 +666,10 @@ const ViewSet = () => {
                                     <span>{
                                         deadlineText ? deadlineText : "Add to Deadline"
                                     }</span>
+                                </div>
+                                <div className="button" onClick={() => navigate(`/matching?setId=${id}`)} >
+                                    <i><MdCompareArrows size={30}/></i>
+                                    <span>Matching</span>
                                 </div>
                             </div>
                             <div

@@ -32,6 +32,7 @@ import UserProfile from "../pages/profile/UserProfile.jsx";
 import {Route} from "react-router-dom";
 import SignUp from "../scenes/register/SignUp.jsx";
 import Login from "../scenes/login/Login.jsx";
+import Matching from "../pages/matching/index.jsx";
 
 export const guestRoutes = [
     {
@@ -181,6 +182,14 @@ export const arenaRoutes = [
     {
         path: '*',
         component: <NotFound/>,
+    },
+];
+
+export const matchingRoutes = [
+    {
+        path: '',
+        component: <Matching/>,
+        private: true,
     },
 ];
 
