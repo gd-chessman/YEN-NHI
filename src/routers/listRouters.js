@@ -33,6 +33,7 @@ import {Route} from "react-router-dom";
 import SignUp from "../scenes/register/SignUp.jsx";
 import Login from "../scenes/login/Login.jsx";
 import Matching from "../pages/matching/index.jsx";
+import MyClass from "../pages/my-class/index.jsx";
 
 export const guestRoutes = [
     {
@@ -125,6 +126,11 @@ export const userRoutes = [
     {
         path: "profile",
         component: <UserProfile/>,
+        private: true,
+    },
+    {
+        path: "my-class",
+        component: <MyClass/>,
         private: true,
     },
     {

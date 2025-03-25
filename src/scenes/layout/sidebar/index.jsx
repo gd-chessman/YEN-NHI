@@ -15,6 +15,7 @@ import CardDeadline from "../../../components/DeadlineCard/CardDeadline.jsx";
 import "../../../components/Term/Term.jsx"
 import * as deadlineService from "../../../services/fetchDeadline.js"
 import {useDeadline} from "src/context/DeadlineContext.jsx";
+import { SiGoogleclassroom } from "react-icons/si";
 
 function SideBar() {
     const [collapsed, setCollapsed] = useState(false);
@@ -160,6 +161,40 @@ function SideBar() {
                         />
                     </Box>
                 </Menu>
+                {/*  */}
+                <Menu
+                    menuItemStyles={{
+                        button: {
+                            ":hover": {
+                                color: "#868dfb",
+                                background: "transparent",
+                                transition: ".4s ease",
+                            },
+                        },
+                    }}
+                >
+                    <Box
+                        bgcolor={colors.primary[400]}
+                        display="flex"
+                        flexDirection="column"
+                        alignItems="center"
+                        justifyContent="center"
+                        borderRadius="15px"
+                        borderTop="2px solid"
+                        borderRight="2px solid"
+                        borderLeft="2px solid"
+                        borderBottom="4px solid"
+                        borderColor="#e0e0fe"
+                    >
+                        <Item
+                            title="My class"
+                            path="my-class"
+                            colors={colors}
+                            icon={<SiGoogleclassroom  size={18}/>}
+                        />
+                    </Box>
+                </Menu>
+                {/*  */}
                 <Menu
                     menuItemStyles={{
                         button: {
