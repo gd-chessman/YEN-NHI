@@ -667,7 +667,7 @@ const ViewSet = () => {
                                         deadlineText ? deadlineText : "Add to Deadline"
                                     }</span>
                                 </div>
-                                <div className="button" onClick={() => navigate(`/matching?setId=${id}`)} >
+                                <div className="button" onClick={() => navigate(`/matching?setId=${id}&new=1`)} >
                                     <i><MdCompareArrows size={30}/></i>
                                     <span>Matching</span>
                                 </div>
