@@ -107,4 +107,9 @@ public class FlashcardServiceImpl implements IFlashcardService {
     public IFlashcardDTO findByCardId(Long cardId) {
         return flashcardRepository.findFlashcardByCardId(cardId);
     }
+
+    @Override
+    public List<IFlashcardDTO> getRandomFlashcardsBySetId(Long setId) {
+        return flashcardRepository.findRandomFlashcardsBySetId(setId);
+    }
 }

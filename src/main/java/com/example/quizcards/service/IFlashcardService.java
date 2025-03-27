@@ -26,4 +26,7 @@ public interface IFlashcardService {
     void deleteFlashcard_2(Long cardId, Long setId);
 
     IFlashcardDTO findByCardId(Long cardId);
+
+    List<IFlashcardDTO> getRandomFlashcardsBySetId(Long setId);
+
 }
