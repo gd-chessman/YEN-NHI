@@ -1,8 +1,11 @@
-"use client"
-
 import { useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import api from "../../apis/api"
+import { IoIosArrowBack } from "react-icons/io"
+import { Round1 } from "../../components/matching/Round1"
+import { Round2 } from "../../components/matching/Round2"
+import { Round3 } from "../../components/matching/Round3"
+import PracticeComplete from "../../components/matching/PracticeComplete"
 
 export default function Matching() {
   const [data, setData] = useState([])
@@ -51,19 +54,23 @@ export default function Matching() {
   // Shuffle answers when round changes or data loads
   useEffect(() => {
     if (groupedByRound[currentRound] && groupedByRound[currentRound].length > 0) {
-      // Only shuffle if we haven't already or if the round changed
-      if (shuffledAnswers.length === 0 || shuffledAnswers.length !== groupedByRound[currentRound].length) {
-        // Create a shuffled array of indices
-        const indices = [...Array(groupedByRound[currentRound].length).keys()]
-        // Fisher-Yates shuffle algorithm
+      let answers = [...groupedByRound[currentRound]];
+
+      if (currentRound === "ROUND_3" && groupedByRound["ROUND_1"]) {
+        answers = [...answers, ...groupedByRound["ROUND_1"]]; // Nhân đôi số câu trả lời
+      }
+
+      if (shuffledAnswers.length === 0 || shuffledAnswers.length !== answers.length) {
+        const indices = [...Array(answers.length).keys()];
         for (let i = indices.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1))
-          ;[indices[i], indices[j]] = [indices[j], indices[i]]
+          const j = Math.floor(Math.random() * (i + 1));
+          [indices[i], indices[j]] = [indices[j], indices[i]];
         }
-        setShuffledAnswers(indices)
+        setShuffledAnswers(indices);
       }
     }
-  }, [currentRound, groupedByRound, shuffledAnswers.length])
+  }, [currentRound, groupedByRound, shuffledAnswers.length]);
+
 
   // Check round completion and progress
   useEffect(() => {
@@ -142,172 +149,106 @@ export default function Matching() {
   // Round selection component
   const RoundSelector = () => {
     const rounds = Object.keys(groupedByRound)
+
+    // Calculate overall progress across all rounds
+    let totalItems = 0
+    let totalCorrectItems = 0
+
+    // Count total items and correct items across all rounds
+    rounds.forEach((round) => {
+      const roundItems = groupedByRound[round] || []
+      totalItems += roundItems.length
+      totalCorrectItems += roundItems.filter((item) => item.isCorrect).length
+    })
+
+    // Calculate the overall progress percentage
+    const progressPercentage = totalItems > 0 ? (totalCorrectItems / totalItems) * 104 : 0
+
+    // Calculate which segment is active based on current round
+    const currentRoundIndex = rounds.indexOf(currentRound)
+
     return (
       <div className="w-11/12 relative flex items-center h-6 px-3 py-2 bg-[#e0e0fe] rounded-3xl mx-auto text-center font-semibold">
-        {rounds.map((round, index) => (
-          <div
-            key={round}
-            className={`absolute ${
-              index === 0 ? "left-1/3" : index === 1 ? "left-2/3" : "right-0"
-            } bg-[#c4b5fd] text-white rounded-full size-10 flex items-center justify-center cursor-pointer ${
-              currentRound === round ? "bg-violet-700" : ""
-            }`}
-            onClick={() => setCurrentRound(round)}
-          >
-            {index + 1}
-          </div>
-        ))}
+        {/* Progress bar that moves right as rounds are completed */}
+        <div
+          className="absolute left-0 h-full bg-violet-300 rounded-3xl transition-all duration-500 ease-out"
+          style={{ width: `${progressPercentage}%` }}
+        />
+
+        {rounds.map((round, index) => {
+          // Calculate position based on even distribution
+          const position = index === 0 ? "left-1/3" : index === 1 ? "left-2/3" : "right-0"
+
+          return (
+            <div
+              key={round}
+              className={`absolute ${position} bg-[#c4b5fd] text-white rounded-full size-10 flex items-center justify-center cursor-pointer z-10 transition-all duration-300 ${currentRound === round ? "bg-violet-700" : ""
+                }`}
+              onClick={() => setCurrentRound(round)}
+            >
+              {(index + 1) * 5}
+            </div>
+          )
+        })}
       </div>
     )
   }
 
-  // Render completion modal
-  const CompletionModal = () => {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center z-100">
-        <div className="bg-white p-8 rounded-lg shadow-xl text-center">
-          <h2 className="text-2xl font-bold text-violet-700 mb-4">Congratulations!</h2>
-          <p className="text-lg mb-6">You have successfully completed all rounds of the matching game.</p>
-          <button
-            className="bg-violet-600 text-white px-6 py-2 rounded-lg hover:bg-violet-700 transition"
-            onClick={() => {
-              navigate(-1) // Go back to previous page
-            }}
-          >
-            Finish
-          </button>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <>
-      {isGameCompleted && <CompletionModal />}
-      <header className="w-full fixed z-50 top-0 h-[4.8125rem] bg-[#ededff] shadow-[0px_10px_60px_0px_rgba(0,0,0,0.15)]" />
-      <main className="bg-[#ededff] h-svh mt-16 py-16">
-        <RoundSelector />
-
-        <div className="grid grid-cols-2 gap-4 w-11/12 mx-auto mt-12">
-          {/* Column 1 - Questions */}
-          <div className="flex flex-col gap-4">
-            {groupedByRound?.[currentRound]?.map((item, index) => (
-              <QuestionItem
-                key={item.matchingId}
-                item={item}
-                index={index}
-                isSelected={selectedQuestion === index}
-                isMatched={item.isCorrect}
-                isIncorrect={incorrectPair.question === index}
-                onSelect={() => {
-                  if (!item.isCorrect) {
-                    setSelectedQuestion(index)
-                  }
-                }}
+      {isGameCompleted && <PracticeComplete />}
+      {!isGameCompleted &&
+        <>
+          <header className="w-full fixed z-50 top-0 px-6 flex items-center justify-between h-[4.8125rem] bg-[#ededff] shadow-[0px_10px_60px_0px_rgba(0,0,0,0.15)]">
+            <button className="bg-white rounded border-none py-1 px-2" onClick={() => navigate(-1)}>
+              <IoIosArrowBack />
+            </button>
+            <b className="text-xl">Trắc nghiệm</b>
+            <button className="bg-[#e0e7ff] border-none rounded py-1 px-2">Set of {Object.keys(groupedByRound)?.length * 5}</button>
+          </header>
+          <main className="bg-[#ededff] h-svh mt-16 py-16">
+            <RoundSelector />
+            {currentRound == "ROUND_1" && (
+              <Round1
+                groupedByRound={groupedByRound}
+                currentRound={currentRound}
+                shuffledAnswers={shuffledAnswers}
+                selectedQuestion={selectedQuestion}
+                selectedAnswer={selectedAnswer}
+                incorrectPair={incorrectPair}
+                setSelectedQuestion={setSelectedQuestion}
+                setSelectedAnswer={setSelectedAnswer}
               />
-            ))}
-          </div>
-
-          {/* Column 2 - Answers (Shuffled) */}
-          <div className="flex flex-col gap-4">
-            {shuffledAnswers.map((originalIndex, shuffledIndex) => {
-              const item = groupedByRound?.[currentRound]?.[originalIndex]
-              return item ? (
-                <AnswerItem
-                  key={item.matchingId}
-                  item={item}
-                  index={shuffledIndex}
-                  isSelected={selectedAnswer === shuffledIndex}
-                  isMatched={item.isCorrect}
-                  isIncorrect={incorrectPair.answer === shuffledIndex}
-                  onSelect={() => {
-                    if (!item.isCorrect) {
-                      setSelectedAnswer(shuffledIndex)
-                    }
-                  }}
-                />
-              ) : null
-            })}
-          </div>
-        </div>
-      </main>
+            )}
+            {currentRound == "ROUND_2" && (
+              <Round2
+                groupedByRound={groupedByRound}
+                currentRound={currentRound}
+                shuffledAnswers={shuffledAnswers}
+                selectedQuestion={selectedQuestion}
+                selectedAnswer={selectedAnswer}
+                incorrectPair={incorrectPair}
+                setSelectedQuestion={setSelectedQuestion}
+                setSelectedAnswer={setSelectedAnswer}
+              />
+            )}
+            {currentRound == "ROUND_3" && (
+              <Round3
+                groupedByRound={groupedByRound}
+                currentRound={currentRound}
+                shuffledAnswers={shuffledAnswers}
+                selectedQuestion={selectedQuestion}
+                selectedAnswer={selectedAnswer}
+                incorrectPair={incorrectPair}
+                setSelectedQuestion={setSelectedQuestion}
+                setSelectedAnswer={setSelectedAnswer}
+              />
+            )}
+          </main>
+        </>
+      }
     </>
-  )
-}
-
-// Component for Question
-function QuestionItem({ item, index, isSelected, isMatched, isIncorrect, onSelect }) {
-  return (
-    <div
-      className={`flex gap-2 cursor-pointer transition-all duration-300 rounded-full
-                ${isMatched ? "opacity-20 pointer-events-none" : ""}
-                ${isIncorrect ? "bg-red-200" : isSelected ? "bg-violet-200 scale-[1.02]" : "hover:bg-violet-50"}`}
-      onClick={onSelect}
-    >
-      <span
-        className={`w-20 h-16 flex items-center rounded-2xl shadow-[0px_3px_0px_0px_rgba(186,190,253,1.00)] border-2 
-                ${
-                  isIncorrect
-                    ? "bg-red-500 text-white border-red-600"
-                    : isSelected
-                      ? "bg-violet-500 text-white border-violet-600"
-                      : "bg-indigo-100 text-violet-300 border-violet-300"
-                } 
-                text-center justify-center text-3xl font-bold`}
-      >
-        {index + 1}
-      </span>
-      <div
-        className={`w-full flex items-center px-4 h-16 rounded-2xl shadow-md border-2 
-                ${
-                  isIncorrect
-                    ? "bg-red-100 border-red-500"
-                    : isSelected
-                      ? "bg-violet-100 border-violet-500"
-                      : "bg-indigo-100 border-violet-300"
-                }`}
-      >
-        {item.flashcard.question.split("\n\n")[0]}
-      </div>
-    </div>
-  )
-}
-
-// Component for Answer
-function AnswerItem({ item, index, isSelected, isMatched, isIncorrect, onSelect }) {
-  return (
-    <div
-      className={`flex gap-2 cursor-pointer transition-all duration-300 rounded-full
-                ${isMatched ? "opacity-20 pointer-events-none" : ""}
-                ${isIncorrect ? "bg-red-200" : isSelected ? "bg-violet-200 scale-[1.02]" : "hover:bg-violet-50"}`}
-      onClick={onSelect}
-    >
-      <span
-        className={`w-20 h-16 flex items-center rounded-2xl shadow-[0px_3px_0px_0px_rgba(186,190,253,1.00)] border-2 
-                ${
-                  isIncorrect
-                    ? "bg-red-500 text-white border-red-600"
-                    : isSelected
-                      ? "bg-violet-500 text-white border-violet-600"
-                      : "bg-indigo-100 text-violet-300 border-violet-300"
-                } 
-                text-center justify-center text-3xl font-bold`}
-      >
-        {String.fromCharCode(65 + index)}
-      </span>
-      <div
-        className={`w-full flex items-center px-4 h-16 rounded-2xl shadow-md border-2 
-                ${
-                  isIncorrect
-                    ? "bg-red-100 border-red-500"
-                    : isSelected
-                      ? "bg-violet-100 border-violet-500"
-                      : "bg-indigo-100 border-violet-300"
-                }`}
-      >
-        {item.flashcard.answer}
-      </div>
-    </div>
   )
 }
 
