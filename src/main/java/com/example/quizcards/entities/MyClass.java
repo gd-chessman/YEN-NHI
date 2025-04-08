@@ -40,10 +40,14 @@ public class MyClass {
     @JsonIgnore
     private Set<Folder> folders = new HashSet<>();
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToMany
+    @JoinTable(
+            name = "myclass_owners",
+            joinColumns = @JoinColumn(name = "myclass_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
     @JsonIgnore
-    private AppUser user;
+    private Set<AppUser> owners = new HashSet<>();
 
     // Mối quan hệ nhiều-nhiều với AppUser (members)
     @ManyToMany
