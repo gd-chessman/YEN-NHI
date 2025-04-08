@@ -13,4 +13,6 @@ public interface IMyClassService {
     Optional<MyClass> findById(Long id);
 
     boolean addFolderToClass(Long classId, Long folderId);
+
+    boolean removeFolderFromClass(Long classId, Long folderId);
 }

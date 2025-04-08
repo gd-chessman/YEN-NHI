@@ -8,12 +8,15 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "myclasses")
+@EqualsAndHashCode(exclude = {"folders", "members"})
+@ToString(exclude = {"folders", "members"})
 public class MyClass {
 
     @Id
@@ -34,6 +37,7 @@ public class MyClass {
     private String description;
 
     @ManyToMany(mappedBy = "myClasses")
+    @JsonIgnore
     private Set<Folder> folders = new HashSet<>();
 
     @ManyToOne

@@ -6,13 +6,18 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,6 +25,8 @@ import java.util.Set;
 @Table(name = "folders", indexes = {
         @Index(name = "idx_folder_title_fulltext", columnList = "title", unique = false)
 })
+@EqualsAndHashCode(exclude = {"myClasses"})
+@ToString(exclude = {"myClasses"})
 public class Folder implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -76,4 +76,18 @@ public class MyClassController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @DeleteMapping("/{classId}/remove-folder/{folderId}")
+    public ResponseEntity<?> removeFolderFromClass(@PathVariable Long classId, @PathVariable Long folderId) {
+        try {
+            boolean success = iMyClassService.removeFolderFromClass(classId, folderId);
+            if (success) {
+                return new ResponseEntity<>("Folder removed from class successfully", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Failed to remove folder from class", HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

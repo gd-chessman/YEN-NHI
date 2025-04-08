@@ -23,8 +23,8 @@ configurations {
 
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
-    maven { url 'https://repo.spring.io/release' }
+    maven { url = uri("https://jitpack.io") }
+    maven { url = uri("https://repo.spring.io/release") }
 }
 
 dependencies {
@@ -102,6 +102,8 @@ dependencies {
 
     // Dependency cho testing (chỉ dùng trong kiểm thử)
     testImplementation 'org.springframework.kafka:spring-kafka-test:3.2.4'
+
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
 }
 
 tasks.named('test') {

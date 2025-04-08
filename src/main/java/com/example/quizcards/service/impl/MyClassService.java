@@ -43,17 +43,36 @@ public class MyClassService implements IMyClassService {
 
     @Override
     public boolean addFolderToClass(Long classId, Long folderId) {
-        Optional<MyClass> optionalClass = findById(classId);
-        Optional<Folder> optionalFolder = iFolderRepository.findById(folderId);
+        Optional<MyClass> myClassOptional = iMyClassRepository.findById(classId);
+        Optional<Folder> folderOptional = iFolderRepository.findById(folderId);
 
-        if (optionalClass.isPresent() && optionalFolder.isPresent()) {
-            MyClass myClass = optionalClass.get();
-            Folder folder = optionalFolder.get();
+        if (myClassOptional.isPresent() && folderOptional.isPresent()) {
+            MyClass myClass = myClassOptional.get();
+            Folder folder = folderOptional.get();
 
-            // Add the class to the folder's collection
+            myClass.getFolders().add(folder);
             folder.getMyClasses().add(myClass);
 
-            // The reciprocal relationship will be managed by JPA due to mappedBy
+            iMyClassRepository.save(myClass);
+            iFolderRepository.save(folder);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean removeFolderFromClass(Long classId, Long folderId) {
+        Optional<MyClass> myClassOptional = iMyClassRepository.findById(classId);
+        Optional<Folder> folderOptional = iFolderRepository.findById(folderId);
+
+        if (myClassOptional.isPresent() && folderOptional.isPresent()) {
+            MyClass myClass = myClassOptional.get();
+            Folder folder = folderOptional.get();
+
+            myClass.getFolders().remove(folder);
+            folder.getMyClasses().remove(myClass);
+
+            iMyClassRepository.save(myClass);
             iFolderRepository.save(folder);
             return true;
         }
