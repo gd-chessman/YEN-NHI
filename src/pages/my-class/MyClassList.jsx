@@ -11,10 +11,16 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export default function MyClassList() {
     const [showModal, setShowModal] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [selectedClass, setSelectedClass] = useState(null);
+    const [joinRequests, setJoinRequests] = useState([]);
+    const [shareLink, setShareLink] = useState('');
     const [myClasses, setMyClasses] = useState([]);
+    const [joinedClasses, setJoinedClasses] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [joinClassId, setJoinClassId] = useState('');
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
     // Gọi API khi component mount
@@ -28,6 +34,25 @@ export default function MyClassList() {
             // Lấy dữ liệu myClasses
             const myClassesResponse = await api.get("/v1/my-class/me");
             setMyClasses(myClassesResponse.data);
+            
+            // TODO: Replace with actual API call to get joined classes
+            // This is mock data for demonstration
+            setJoinedClasses([
+                {
+                    classId: '1',
+                    title: 'Mathematics 101',
+                    description: 'Introduction to Mathematics',
+                    owner: 'John Smith',
+                    items: 15
+                },
+                {
+                    classId: '2',
+                    title: 'Physics 101',
+                    description: 'Introduction to Physics',
+                    owner: 'Jane Doe',
+                    items: 20
+                }
+            ]);
         } catch (error) {
             console.error("Error fetching data:", error);
         }
@@ -47,17 +72,15 @@ export default function MyClassList() {
     // Hàm xử lý khi nhấn nút chia sẻ
     const handleShareClass = async (classId) => {
         try {
-            // TODO: Implement share functionality
-            toast.info('Share functionality coming soon!', {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-            });
+            setSelectedClass(classId);
+            // TODO: Replace with actual API call to get share link
+            setShareLink(`${window.location.origin}/join-class/${classId}`);
+            // TODO: Replace with actual API call to get join requests
+            setJoinRequests([
+                { id: 1, name: 'John Doe', email: 'john@example.com', status: 'pending' },
+                { id: 2, name: 'Jane Smith', email: 'jane@example.com', status: 'pending' }
+            ]);
+            setShowShareModal(true);
         } catch (error) {
             console.error(`Error sharing class ${classId}:`, error);
             toast.error('Failed to share class', {
@@ -70,6 +93,52 @@ export default function MyClassList() {
                 progress: undefined,
                 theme: "light",
             });
+        }
+    };
+
+    const handleAcceptRequest = async (requestId) => {
+        try {
+            // TODO: Implement accept request API call
+            toast.success('Request accepted successfully');
+            setJoinRequests(prev => prev.filter(req => req.id !== requestId));
+        } catch (error) {
+            toast.error('Failed to accept request');
+        }
+    };
+
+    const handleRejectRequest = async (requestId) => {
+        try {
+            // TODO: Implement reject request API call
+            toast.success('Request rejected successfully');
+            setJoinRequests(prev => prev.filter(req => req.id !== requestId));
+        } catch (error) {
+            toast.error('Failed to reject request');
+        }
+    };
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(shareLink);
+        toast.success('Link copied to clipboard!');
+    };
+
+    const handleJoinClass = async () => {
+        if (!joinClassId.trim()) {
+            toast.error('Please enter a class ID');
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            await api.post(`/v1/share-requests/${joinClassId}`);
+            toast.success('Join request sent successfully');
+            setJoinClassId('');
+            // Refresh the joined classes list
+            fetchData();
+        } catch (error) {
+            console.error('Error joining class:', error);
+            toast.error(error.response?.data?.message || 'Failed to send join request');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -88,7 +157,7 @@ export default function MyClassList() {
             </div>
 
             {/* My Classes Section */}
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-5xl mx-auto mb-12">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold">My classes</h2>
                     <div className="relative">
@@ -152,6 +221,77 @@ export default function MyClassList() {
                     ))}
                 </div>
             </div>
+
+            {/* Join Classes Section */}
+            <div className="max-w-5xl mx-auto">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">Join classes</h2>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                value={joinClassId}
+                                onChange={(e) => setJoinClassId(e.target.value)}
+                                placeholder="Enter class ID"
+                                className="px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <Button
+                                variant="primary"
+                                onClick={handleJoinClass}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? 'Joining...' : 'Join Class'}
+                            </Button>
+                        </div>
+                        <div className="relative">
+                            <select className="appearance-none bg-[#e0e0fe] px-4 py-1 pr-8 rounded-lg text-sm font-medium">
+                                <option>Date joined</option>
+                                <option>Alphabetical</option>
+                                <option>Recently used</option>
+                            </select>
+                            <div className="absolute right-2 top-2 pointer-events-none flex">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M4 6L8 10L12 6"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Join Class Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {joinedClasses.map((joinedClass) => (
+                        <Link 
+                            key={joinedClass.classId}
+                            to={`/user/join-class/${joinedClass.classId}/folder`}
+                            className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden no-underline"
+                        >
+                            <div className="p-6">
+                                <div className="flex items-center">
+                                    <BiSolidFolder className="text-[#4f46e5] text-2xl mr-3" />
+                                    <h3 className="text-lg font-medium text-gray-900">{joinedClass.title}</h3>
+                                </div>
+                                <p className="mt-2 text-sm text-gray-500 line-clamp-2">{joinedClass.description}</p>
+                                <div className="mt-4 flex items-center justify-between">
+                                    <span className="text-sm text-gray-500">
+                                        Owner: {joinedClass.owner}
+                                    </span>
+                                    <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
+                                        {joinedClass.items || 0} items
+                                    </span>
+                                </div>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+            </div>
+
             <button className='fixed bottom-10 right-10 bg-[#0e22e9] p-2.5 flex border-none rounded' onClick={() => setShowModal(true)}>
                 <IoAddOutline size={24} color='white' />
             </button>
@@ -172,6 +312,61 @@ export default function MyClassList() {
                             </Button>
                         </Modal.Footer>
                     </form>
+                </Modal.Body>
+            </Modal>
+            <Modal show={showShareModal} onHide={() => setShowShareModal(false)} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title style={{ fontWeight: "700" }}>Share Class</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="mb-4">
+                        <h3 className="text-lg font-medium mb-2">Share Link</h3>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={shareLink}
+                                readOnly
+                                className="flex-1 p-2 border rounded"
+                            />
+                            <Button variant="primary" onClick={copyToClipboard}>
+                                Copy
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 className="text-lg font-medium mb-2">Join Requests</h3>
+                        {joinRequests.length === 0 ? (
+                            <p className="text-gray-500">No pending requests</p>
+                        ) : (
+                            <div className="space-y-3">
+                                {joinRequests.map((request) => (
+                                    <div key={request.id} className="flex items-center justify-between p-3 border rounded">
+                                        <div>
+                                            <p className="font-medium">{request.name}</p>
+                                            <p className="text-sm text-gray-500">{request.email}</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                variant="success"
+                                                size="sm"
+                                                onClick={() => handleAcceptRequest(request.id)}
+                                            >
+                                                Accept
+                                            </Button>
+                                            <Button
+                                                variant="danger"
+                                                size="sm"
+                                                onClick={() => handleRejectRequest(request.id)}
+                                            >
+                                                Reject
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </Modal.Body>
             </Modal>
             <ToastContainer />
