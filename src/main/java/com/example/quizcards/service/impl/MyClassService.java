@@ -1,5 +1,6 @@
 package com.example.quizcards.service.impl;
 
+import com.example.quizcards.entities.AppUser;
 import com.example.quizcards.entities.Folder;
 import com.example.quizcards.entities.MyClass;
 import com.example.quizcards.repository.IFolderRepository;
@@ -25,6 +26,10 @@ public class MyClassService implements IMyClassService {
 
     @Override
     public void save(MyClass myClass) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserPrincipal user = (UserPrincipal) authentication.getPrincipal();
+        Long userId = user.getId();
+        myClass.setOwners(new AppUser(userId));
         iMyClassRepository.save(myClass);
     }
 
@@ -77,5 +82,10 @@ public class MyClassService implements IMyClassService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public List<MyClass> findJoinedClasses(Long userId) {
+        return iMyClassRepository.findJoinedClassesByUserId(userId);
     }
 }

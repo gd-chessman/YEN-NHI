@@ -15,4 +15,6 @@ public interface IMyClassService {
     boolean addFolderToClass(Long classId, Long folderId);
 
     boolean removeFolderFromClass(Long classId, Long folderId);
+
+    List<MyClass> findJoinedClasses(Long userId);
 }

@@ -27,6 +27,16 @@ public class MyClassShareRequestServiceImpl implements IMyClassShareRequestServi
 
         MyClass myClass = myClassRepository.findById(myClassId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
+                
+        // Kiểm tra nếu người dùng là owner của lớp
+        if (myClass.getOwners() != null && myClass.getOwners().getUserId().equals(requesterId)) {
+            throw new RuntimeException("You are already the owner of this class");
+        }
+        
+        // Kiểm tra nếu người dùng đã là thành viên của lớp
+        if (myClass.getMembers().stream().anyMatch(member -> member.getUserId().equals(requesterId))) {
+            throw new RuntimeException("You are already a member of this class");
+        }
 
         MyClassShareRequest request = MyClassShareRequest.builder()
                 .myClass(myClass)
