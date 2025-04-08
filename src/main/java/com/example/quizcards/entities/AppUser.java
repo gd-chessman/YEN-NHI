@@ -79,9 +79,6 @@ public class AppUser implements Serializable {
     @JoinColumn(name = "role_id", foreignKey = @ForeignKey(name = "fk_user_role"))
     private AppRole role;
 
-    @ManyToMany(mappedBy = "owners")
-    @JsonIgnore
-    private Set<MyClass> ownedClasses = new HashSet<>();
 
     @ManyToMany(mappedBy = "members")
     @JsonIgnore

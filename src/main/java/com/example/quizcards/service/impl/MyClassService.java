@@ -33,7 +33,7 @@ public class MyClassService implements IMyClassService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserPrincipal user = (UserPrincipal) authentication.getPrincipal();
         Long userId = user.getId();
-        return iMyClassRepository.findByUser_UserId(userId);
+        return iMyClassRepository.findByOwners_UserId(userId);
     }
 
     @Override
