@@ -35,6 +35,7 @@ import Login from "../scenes/login/Login.jsx";
 import Matching from "../pages/matching/index.jsx";
 import MyClassList from "../pages/my-class/MyClassList.jsx";
 import MyFolderList from "../pages/my-class/MyFolderList.jsx";
+import JoinClassFolder from "../pages/my-class/JoinClassFolder.jsx";
 
 export const guestRoutes = [
     {
@@ -135,8 +136,13 @@ export const userRoutes = [
         private: true,
     },
     {
-        path: "my-class/:classId/folder",
+        path: "my-class/:id/folder",
         component: <MyFolderList/>,
+        private: true,
+    },
+    {
+        path: "join-class/:id/folder",
+        component: <JoinClassFolder/>,
         private: true,
     },
     {

@@ -35,26 +35,12 @@ export default function MyClassList() {
             const myClassesResponse = await api.get("/v1/my-class/me");
             setMyClasses(myClassesResponse.data);
             
-            // TODO: Replace with actual API call to get joined classes
-            // This is mock data for demonstration
-            setJoinedClasses([
-                {
-                    classId: '1',
-                    title: 'Mathematics 101',
-                    description: 'Introduction to Mathematics',
-                    owner: 'John Smith',
-                    items: 15
-                },
-                {
-                    classId: '2',
-                    title: 'Physics 101',
-                    description: 'Introduction to Physics',
-                    owner: 'Jane Doe',
-                    items: 20
-                }
-            ]);
+            // Lấy danh sách joined classes
+            const joinedClassesResponse = await api.get("/v1/my-class/joined");
+            setJoinedClasses(joinedClassesResponse.data);
         } catch (error) {
             console.error("Error fetching data:", error);
+            toast.error('Failed to fetch data');
         }
     };
 
@@ -73,13 +59,11 @@ export default function MyClassList() {
     const handleShareClass = async (classId) => {
         try {
             setSelectedClass(classId);
-            // TODO: Replace with actual API call to get share link
-            setShareLink(`${window.location.origin}/join-class/${classId}`);
-            // TODO: Replace with actual API call to get join requests
-            setJoinRequests([
-                { id: 1, name: 'John Doe', email: 'john@example.com', status: 'pending' },
-                { id: 2, name: 'Jane Smith', email: 'jane@example.com', status: 'pending' }
-            ]);
+            // Set share link to just the class ID
+            setShareLink(classId);
+            // Get share requests from API
+            const response = await api.get(`/v1/share-requests/my-class/${classId}`);
+            setJoinRequests(response.data);
             setShowShareModal(true);
         } catch (error) {
             console.error(`Error sharing class ${classId}:`, error);
@@ -98,21 +82,37 @@ export default function MyClassList() {
 
     const handleAcceptRequest = async (requestId) => {
         try {
-            // TODO: Implement accept request API call
+            const response = await api.put(`/v1/share-requests/${requestId}/process`, null, {
+                params: {
+                    status: 'APPROVED'
+                }
+            });
             toast.success('Request accepted successfully');
-            setJoinRequests(prev => prev.filter(req => req.id !== requestId));
+            // Refresh the share requests list
+            if (selectedClass) {
+                handleShareClass(selectedClass);
+            }
         } catch (error) {
-            toast.error('Failed to accept request');
+            console.error('Error accepting request:', error);
+            toast.error(error.response?.data || 'Failed to accept request');
         }
     };
 
     const handleRejectRequest = async (requestId) => {
         try {
-            // TODO: Implement reject request API call
+            const response = await api.put(`/api/v1/share-requests/${requestId}/process`, null, {
+                params: {
+                    status: 'REJECTED'
+                }
+            });
             toast.success('Request rejected successfully');
-            setJoinRequests(prev => prev.filter(req => req.id !== requestId));
+            // Refresh the share requests list
+            if (selectedClass) {
+                handleShareClass(selectedClass);
+            }
         } catch (error) {
-            toast.error('Failed to reject request');
+            console.error('Error rejecting request:', error);
+            toast.error(error.response?.data || 'Failed to reject request');
         }
     };
 
@@ -268,8 +268,8 @@ export default function MyClassList() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {joinedClasses.map((joinedClass) => (
                         <Link 
-                            key={joinedClass.classId}
-                            to={`/user/join-class/${joinedClass.classId}/folder`}
+                            key={joinedClass.myClassId}
+                            to={`/user/join-class/${joinedClass.myClassId}/folder`}
                             className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden no-underline"
                         >
                             <div className="p-6">
@@ -280,10 +280,10 @@ export default function MyClassList() {
                                 <p className="mt-2 text-sm text-gray-500 line-clamp-2">{joinedClass.description}</p>
                                 <div className="mt-4 flex items-center justify-between">
                                     <span className="text-sm text-gray-500">
-                                        Owner: {joinedClass.owner}
+                                        Created: {new Date(joinedClass.createdAt).toLocaleDateString()}
                                     </span>
                                     <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
-                                        {joinedClass.items || 0} items
+                                        {joinedClass.members?.length || 0} members
                                     </span>
                                 </div>
                             </div>
@@ -320,18 +320,20 @@ export default function MyClassList() {
                 </Modal.Header>
                 <Modal.Body>
                     <div className="mb-4">
-                        <h3 className="text-lg font-medium mb-2">Share Link</h3>
+                        <h3 className="text-lg font-medium mb-2">Share Code</h3>
                         <div className="flex gap-2">
                             <input
                                 type="text"
                                 value={shareLink}
                                 readOnly
                                 className="flex-1 p-2 border rounded"
+                                placeholder="Class Code"
                             />
                             <Button variant="primary" onClick={copyToClipboard}>
                                 Copy
                             </Button>
                         </div>
+                        <p className="text-sm text-gray-500 mt-1">Share this code with others to let them join your class</p>
                     </div>
 
                     <div>
@@ -341,26 +343,31 @@ export default function MyClassList() {
                         ) : (
                             <div className="space-y-3">
                                 {joinRequests.map((request) => (
-                                    <div key={request.id} className="flex items-center justify-between p-3 border rounded">
+                                    <div key={request.requestId} className="flex items-center justify-between p-3 border rounded">
                                         <div>
-                                            <p className="font-medium">{request.name}</p>
-                                            <p className="text-sm text-gray-500">{request.email}</p>
+                                            <p className="font-medium">{request.requester.firstName} {request.requester.lastName}</p>
+                                            <p className="text-sm text-gray-500">{request.requester.email}</p>
+                                            <p className="text-xs text-gray-400">Status: {request.status}</p>
                                         </div>
                                         <div className="flex gap-2">
-                                            <Button
-                                                variant="success"
-                                                size="sm"
-                                                onClick={() => handleAcceptRequest(request.id)}
-                                            >
-                                                Accept
-                                            </Button>
-                                            <Button
-                                                variant="danger"
-                                                size="sm"
-                                                onClick={() => handleRejectRequest(request.id)}
-                                            >
-                                                Reject
-                                            </Button>
+                                            {request.status === 'PENDING' && (
+                                                <>
+                                                    <Button
+                                                        variant="success"
+                                                        size="sm"
+                                                        onClick={() => handleAcceptRequest(request.requestId)}
+                                                    >
+                                                        Accept
+                                                    </Button>
+                                                    <Button
+                                                        variant="danger"
+                                                        size="sm"
+                                                        onClick={() => handleRejectRequest(request.requestId)}
+                                                    >
+                                                        Reject
+                                                    </Button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
