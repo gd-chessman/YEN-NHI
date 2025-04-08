@@ -33,8 +33,8 @@ import {Route} from "react-router-dom";
 import SignUp from "../scenes/register/SignUp.jsx";
 import Login from "../scenes/login/Login.jsx";
 import Matching from "../pages/matching/index.jsx";
-import MyClass from "../pages/my-class/index.jsx";
-import MyFolder from "../pages/my-class/folder.jsx";
+import MyClassList from "../pages/my-class/MyClassList.jsx";
+import MyFolderList from "../pages/my-class/MyFolderList.jsx";
 
 export const guestRoutes = [
     {
@@ -131,12 +131,12 @@ export const userRoutes = [
     },
     {
         path: "my-class",
-        component: <MyClass/>,
+        component: <MyClassList/>,
         private: true,
     },
     {
-        path: "my-class/:id/folder",
-        component: <MyFolder/>,
+        path: "my-class/:classId/folder",
+        component: <MyFolderList/>,
         private: true,
     },
     {
