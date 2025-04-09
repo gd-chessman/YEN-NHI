@@ -1,6 +1,6 @@
 package com.example.quizcards.entities;
 
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,8 +50,8 @@ public class Folder implements Serializable {
             joinColumns = @JoinColumn(name = "folder_id"),
             inverseJoinColumns = @JoinColumn(name = "myclass_id")
     )
+    @JsonIgnore
     private Set<MyClass> myClasses = new HashSet<>();
-
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)

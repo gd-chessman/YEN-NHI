@@ -40,7 +40,6 @@ public class MyClass {
     private String classCode;
 
     @ManyToMany(mappedBy = "myClasses")
-    @JsonIgnore
     private Set<Folder> folders = new HashSet<>();
 
     @ManyToOne
