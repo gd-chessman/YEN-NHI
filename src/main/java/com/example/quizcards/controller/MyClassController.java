@@ -10,6 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,25 +30,19 @@ public class MyClassController {
     public ResponseEntity<?> createMyClass(@RequestBody MyClass myClass) {
         iMyClassService.save(myClass);
         return new ResponseEntity<>(HttpStatus.CREATED);
-
     }
 
-    // API lấy danh sách các lớp do người dùng tạo (myClasses)
-    @GetMapping("/me")
-    public ResponseEntity<List<MyClass>> getMyClasses() {
-        List<MyClass> myClasses = iMyClassService.findMyClasses();
-        return new ResponseEntity<>(myClasses, HttpStatus.OK);
-    }
-
-    // API lấy danh sách các lớp mà người dùng đã tham gia
-    @GetMapping("/joined")
-    public ResponseEntity<List<MyClass>> getJoinedClasses() {
+    // API lấy danh sách các lớp do người dùng tạo và đã tham gia
+    @GetMapping("/classes")
+    public ResponseEntity<?> getMyAndJoinedClasses() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserPrincipal user = (UserPrincipal) authentication.getPrincipal();
         Long userId = user.getId();
         
+        List<MyClass> myClasses = iMyClassService.findMyClasses();
         List<MyClass> joinedClasses = iMyClassService.findJoinedClasses(userId);
-        return new ResponseEntity<>(joinedClasses, HttpStatus.OK);
+        
+        return new ResponseEntity<>(new MyClassesResponse(myClasses, joinedClasses), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -128,5 +126,14 @@ public class MyClassController {
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    private static class MyClassesResponse {
+        private List<MyClass> myClasses;
+        private List<MyClass> joinedClasses;
     }
 }
