@@ -263,12 +263,14 @@ export default function MyClassList() {
                                         </div>
                                         <p className="mt-2 text-sm text-gray-500 line-clamp-2">{myClass.description}</p>
                                         <div className="mt-4 flex items-center justify-between">
-                                            <span className="text-sm text-gray-500">
-                                                Created: {new Date(myClass.createdAt).toLocaleDateString()}
-                                            </span>
-                                            <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
-                                                {myClass.members?.length || 0} members
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
+                                                    {myClass.members?.length || 0} members
+                                                </span>
+                                                <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
+                                                    {myClass.folders?.length || 0} folders
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </Link>
@@ -322,12 +324,14 @@ export default function MyClassList() {
                                     </div>
                                     <p className="mt-2 text-sm text-gray-500 line-clamp-2">{joinedClass.description}</p>
                                     <div className="mt-4 flex items-center justify-between">
-                                        <span className="text-sm text-gray-500">
-                                            Created: {new Date(joinedClass.createdAt).toLocaleDateString()}
-                                        </span>
-                                        <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
-                                            {joinedClass.members?.length || 0} members
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
+                                                {joinedClass.members?.length || 0} members
+                                            </span>
+                                            <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
+                                                {joinedClass.folders?.length || 0} folders
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </Link>
