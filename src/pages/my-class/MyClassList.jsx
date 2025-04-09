@@ -56,11 +56,10 @@ export default function MyClassList() {
     };
 
     // Hàm xử lý khi nhấn nút chia sẻ
-    const handleShareClass = async (classId) => {
+    const handleShareClass = async (classId, classCode) => {
         try {
             setSelectedClass(classId);
-            // Set share link to just the class ID
-            setShareLink(classId);
+            setShareLink(classCode);
             // Get share requests from API
             const response = await api.get(`/v1/share-requests/my-class/${classId}`);
             setJoinRequests(response.data);
@@ -100,7 +99,7 @@ export default function MyClassList() {
 
     const handleRejectRequest = async (requestId) => {
         try {
-            const response = await api.put(`/api/v1/share-requests/${requestId}/process`, null, {
+            const response = await api.put(`/v1/share-requests/${requestId}/process`, null, {
                 params: {
                     status: 'REJECTED'
                 }
@@ -198,7 +197,7 @@ export default function MyClassList() {
                                         <button
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                handleShareClass(myClass.myClassId);
+                                                handleShareClass(myClass.myClassId, myClass.classCode);
                                             }}
                                             className="group relative inline-flex items-center justify-center p-1.5 rounded-full hover:bg-gray-50 transition-colors duration-200 focus:outline-none border-0"
                                             title="Share class"
@@ -235,7 +234,7 @@ export default function MyClassList() {
                                 type="text"
                                 value={joinClassId}
                                 onChange={(e) => setJoinClassId(e.target.value)}
-                                placeholder="Enter class ID"
+                                placeholder="Enter class code"
                                 className="px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             <Button
