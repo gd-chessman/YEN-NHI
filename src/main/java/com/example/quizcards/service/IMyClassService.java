@@ -17,4 +17,10 @@ public interface IMyClassService {
     boolean removeFolderFromClass(Long classId, Long folderId);
 
     List<MyClass> findJoinedClasses(Long userId);
+
+    void deleteMyClass(Long myClassId, Long userId);
+
+    List<MyClass> searchMyClasses(Long userId, String query);
+
+    List<MyClass> searchJoinedClasses(Long userId, String query);
 }

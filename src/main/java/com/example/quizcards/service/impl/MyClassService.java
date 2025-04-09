@@ -88,4 +88,26 @@ public class MyClassService implements IMyClassService {
     public List<MyClass> findJoinedClasses(Long userId) {
         return iMyClassRepository.findJoinedClassesByUserId(userId);
     }
+
+    public void deleteMyClass(Long myClassId, Long userId) {
+        MyClass myClass = iMyClassRepository.findById(myClassId)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        // Kiểm tra nếu người dùng là owner của lớp
+        if (myClass.getOwners() == null || !myClass.getOwners().getUserId().equals(userId)) {
+            throw new RuntimeException("Only class owner can delete the class");
+        }
+
+        iMyClassRepository.delete(myClass);
+    }
+
+    @Override
+    public List<MyClass> searchMyClasses(Long userId, String query) {
+        return iMyClassRepository.findByOwners_UserIdAndNameContainingIgnoreCaseOrClassCodeContainingIgnoreCase(userId, query, query);
+    }
+
+    @Override
+    public List<MyClass> searchJoinedClasses(Long userId, String query) {
+        return iMyClassRepository.findJoinedClassesByUserIdAndNameContainingIgnoreCaseOrClassCodeContainingIgnoreCase(userId, query, query);
+    }
 }

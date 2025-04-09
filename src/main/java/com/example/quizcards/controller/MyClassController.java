@@ -34,15 +34,25 @@ public class MyClassController {
 
     // API lấy danh sách các lớp do người dùng tạo và đã tham gia
     @GetMapping("/classes")
-    public ResponseEntity<?> getMyAndJoinedClasses() {
+    public ResponseEntity<?> getMyAndJoinedClasses(
+            @RequestParam(required = false) String query) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserPrincipal user = (UserPrincipal) authentication.getPrincipal();
         Long userId = user.getId();
-        
-        List<MyClass> myClasses = iMyClassService.findMyClasses();
-        List<MyClass> joinedClasses = iMyClassService.findJoinedClasses(userId);
-        
-        return new ResponseEntity<>(new MyClassesResponse(myClasses, joinedClasses), HttpStatus.OK);
+
+        List<MyClass> myClasses;
+        List<MyClass> joinedClasses;
+
+        if (query != null && !query.isEmpty()) {
+            myClasses = iMyClassService.searchMyClasses(userId, query);
+            joinedClasses = iMyClassService.searchJoinedClasses(userId, query);
+        } else {
+            myClasses = iMyClassService.findMyClasses();
+            joinedClasses = iMyClassService.findJoinedClasses(userId);
+        }
+
+        MyClassesResponse response = new MyClassesResponse(myClasses, joinedClasses);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
@@ -125,6 +135,20 @@ public class MyClassController {
             }
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/{classId}")
+    public ResponseEntity<?> deleteMyClass(@PathVariable Long classId) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserPrincipal user = (UserPrincipal) authentication.getPrincipal();
+            Long userId = user.getId();
+
+            iMyClassService.deleteMyClass(classId, userId);
+            return new ResponseEntity<>("Class deleted successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
