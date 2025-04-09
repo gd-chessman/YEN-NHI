@@ -31,16 +31,35 @@ export default function MyClassList() {
     }, []);
 
     // Hàm lấy dữ liệu từ API
-    const fetchData = async () => {
+    const fetchData = async (query = '') => {
         try {
-            // Lấy dữ liệu từ API mới
-            const response = await api.get("/v1/my-class/classes");
+            setIsLoading(true);
+            const response = await api.get("/v1/my-class/classes", {
+                params: { query }
+            });
             setMyClasses(response.data.myClasses);
             setJoinedClasses(response.data.joinedClasses);
+            setError(null);
         } catch (error) {
             console.error("Error fetching data:", error);
+            setError('Failed to fetch data');
             toast.error('Failed to fetch data');
+        } finally {
+            setIsLoading(false);
         }
+    };
+
+    // Gọi API khi component mount hoặc searchTerm thay đổi
+    useEffect(() => {
+        const debounceTimer = setTimeout(() => {
+            fetchData(searchTerm);
+        }, 500); // Debounce 500ms
+
+        return () => clearTimeout(debounceTimer);
+    }, [searchTerm]);
+
+    const handleSearch = (e) => {
+        setSearchTerm(e.target.value);
     };
 
     const onSubmit = async (data) => {
@@ -164,6 +183,8 @@ export default function MyClassList() {
                 <input
                     type="text"
                     placeholder="Search your classes"
+                    value={searchTerm}
+                    onChange={handleSearch}
                     className="w-full pl-4 pr-10 py-3 rounded-lg bg-white focus:outline-none"
                 />
                 <button className="absolute right-3 border-none transform -translate-y-1/2 top-1/2 bg-transparent">
@@ -171,87 +192,91 @@ export default function MyClassList() {
                 </button>
             </div>
 
+            {/* Loading State */}
+            {isLoading && (
+                <div className="flex justify-center items-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+            )}
+
+            {/* Error State */}
+            {error && !isLoading && (
+                <div className="text-center text-red-500 py-4">
+                    {error}
+                </div>
+            )}
+
             {/* My Classes Section */}
-            <div className="max-w-5xl mx-auto mb-12">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold">My classes</h2>
-                    <div className="relative">
-                        <select className="appearance-none bg-[#e0e0fe] px-4 py-1 pr-8 rounded-lg text-sm font-medium">
-                            <option>Date modified</option>
-                            <option>Alphabetical</option>
-                            <option>Recently used</option>
-                        </select>
-                        <div className="absolute right-2 top-2 pointer-events-none flex">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M4 6L8 10L12 6"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
-                            </svg>
-                        </div>
+            {!isLoading && !error && (
+                <div className="max-w-5xl mx-auto mb-12">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-2xl font-bold">My classes</h2>
+                    </div>
+
+                    {/* Class Cards Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {myClasses.length === 0 ? (
+                            <div className="col-span-full text-center py-8">
+                                <p className="text-gray-500">No classes found</p>
+                            </div>
+                        ) : (
+                            myClasses.map((myClass) => (
+                                <Link 
+                                    key={myClass.myClassId}
+                                    to={`/user/my-class/${myClass.myClassId}/folder`}
+                                    className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden no-underline"
+                                >
+                                    <div className="p-6">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center">
+                                                <BiSolidFolder className="text-[#4f46e5] text-2xl mr-3" />
+                                                <h3 className="text-lg font-medium text-gray-900">{myClass.title}</h3>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        handleShareClass(myClass.myClassId, myClass.classCode);
+                                                    }}
+                                                    className="group relative inline-flex items-center justify-center p-1.5 rounded-full hover:bg-gray-50 transition-colors duration-200 focus:outline-none border-0"
+                                                    title="Share class"
+                                                >
+                                                    <IoShareOutline className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" />
+                                                    <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                                                        Share class
+                                                    </span>
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        confirmDelete(myClass.myClassId, myClass.title);
+                                                    }}
+                                                    className="group relative inline-flex items-center justify-center p-1.5 rounded-full hover:bg-gray-50 transition-colors duration-200 focus:outline-none border-0"
+                                                    title="Delete class"
+                                                >
+                                                    <IoTrashOutline className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" />
+                                                    <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                                                        Delete class
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <p className="mt-2 text-sm text-gray-500 line-clamp-2">{myClass.description}</p>
+                                        <div className="mt-4 flex items-center justify-between">
+                                            <span className="text-sm text-gray-500">
+                                                Created: {new Date(myClass.createdAt).toLocaleDateString()}
+                                            </span>
+                                            <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
+                                                {myClass.members?.length || 0} members
+                                            </span>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))
+                        )}
                     </div>
                 </div>
-
-                {/* Class Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {myClasses.map((myClass) => (
-                        <Link 
-                            key={myClass.myClassId}
-                            to={`/user/my-class/${myClass.myClassId}/folder`}
-                            className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden no-underline"
-                        >
-                            <div className="p-6">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center">
-                                        <BiSolidFolder className="text-[#4f46e5] text-2xl mr-3" />
-                                        <h3 className="text-lg font-medium text-gray-900">{myClass.title}</h3>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                handleShareClass(myClass.myClassId, myClass.classCode);
-                                            }}
-                                            className="group relative inline-flex items-center justify-center p-1.5 rounded-full hover:bg-gray-50 transition-colors duration-200 focus:outline-none border-0"
-                                            title="Share class"
-                                        >
-                                            <IoShareOutline className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" />
-                                            <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                                                Share class
-                                            </span>
-                                        </button>
-                                        <button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                confirmDelete(myClass.myClassId, myClass.title);
-                                            }}
-                                            className="group relative inline-flex items-center justify-center p-1.5 rounded-full hover:bg-gray-50 transition-colors duration-200 focus:outline-none border-0"
-                                            title="Delete class"
-                                        >
-                                            <IoTrashOutline className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" />
-                                            <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                                                Delete class
-                                            </span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <p className="mt-2 text-sm text-gray-500 line-clamp-2">{myClass.description}</p>
-                                <div className="mt-4 flex items-center justify-between">
-                                    <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
-                                        {myClass.items || 0} items
-                                    </span>
-                                    <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
-                                        {myClass.members?.length || 0} members
-                                    </span>
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
-            </div>
+            )}
 
             {/* Join Classes Section */}
             <div className="max-w-5xl mx-auto">
@@ -274,52 +299,40 @@ export default function MyClassList() {
                                 {isLoading ? 'Joining...' : 'Join Class'}
                             </Button>
                         </div>
-                        <div className="relative">
-                            <select className="appearance-none bg-[#e0e0fe] px-4 py-1 pr-8 rounded-lg text-sm font-medium">
-                                <option>Date joined</option>
-                                <option>Alphabetical</option>
-                                <option>Recently used</option>
-                            </select>
-                            <div className="absolute right-2 top-2 pointer-events-none flex">
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M4 6L8 10L12 6"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                </svg>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
                 {/* Join Class Cards Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {joinedClasses.map((joinedClass) => (
-                        <Link 
-                            key={joinedClass.myClassId}
-                            to={`/user/join-class/${joinedClass.myClassId}/folder`}
-                            className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden no-underline"
-                        >
-                            <div className="p-6">
-                                <div className="flex items-center">
-                                    <BiSolidFolder className="text-[#4f46e5] text-2xl mr-3" />
-                                    <h3 className="text-lg font-medium text-gray-900">{joinedClass.title}</h3>
+                    {joinedClasses.length === 0 ? (
+                        <div className="col-span-full text-center py-8">
+                            <p className="text-gray-500">No joined classes found</p>
+                        </div>
+                    ) : (
+                        joinedClasses.map((joinedClass) => (
+                            <Link 
+                                key={joinedClass.myClassId}
+                                to={`/user/join-class/${joinedClass.myClassId}/folder`}
+                                className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden no-underline"
+                            >
+                                <div className="p-6">
+                                    <div className="flex items-center">
+                                        <BiSolidFolder className="text-[#4f46e5] text-2xl mr-3" />
+                                        <h3 className="text-lg font-medium text-gray-900">{joinedClass.title}</h3>
+                                    </div>
+                                    <p className="mt-2 text-sm text-gray-500 line-clamp-2">{joinedClass.description}</p>
+                                    <div className="mt-4 flex items-center justify-between">
+                                        <span className="text-sm text-gray-500">
+                                            Created: {new Date(joinedClass.createdAt).toLocaleDateString()}
+                                        </span>
+                                        <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
+                                            {joinedClass.members?.length || 0} members
+                                        </span>
+                                    </div>
                                 </div>
-                                <p className="mt-2 text-sm text-gray-500 line-clamp-2">{joinedClass.description}</p>
-                                <div className="mt-4 flex items-center justify-between">
-                                    <span className="text-sm text-gray-500">
-                                        Created: {new Date(joinedClass.createdAt).toLocaleDateString()}
-                                    </span>
-                                    <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
-                                        {joinedClass.members?.length || 0} members
-                                    </span>
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
+                            </Link>
+                        ))
+                    )}
                 </div>
             </div>
 

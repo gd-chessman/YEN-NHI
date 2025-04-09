@@ -9,6 +9,8 @@ import { useParams, Link } from 'react-router-dom';
 
 export default function MyFolderList() {
   const [isModal, setIsModal] = useState(false);
+  const [isDeleteModal, setIsDeleteModal] = useState(false);
+  const [selectedFolder, setSelectedFolder] = useState(null);
   const [folders, setFolders] = useState([]);
   const [userFolders, setUserFolders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -108,6 +110,7 @@ export default function MyFolderList() {
         theme: "light",
       });
       fetchFolders();
+      setIsDeleteModal(false);
     } catch (error) {
       console.error(`Error removing folder ${folderId}:`, error);
       toast.error('Failed to remove folder', {
@@ -216,7 +219,8 @@ export default function MyFolderList() {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        handleRemoveFolder(folder.folderId);
+                        setSelectedFolder(folder);
+                        setIsDeleteModal(true);
                       }}
                       className="group relative inline-flex items-center justify-center p-1.5 rounded-full hover:bg-red-50 transition-colors duration-200 focus:outline-none border-0"
                       title="Remove folder from class"
@@ -237,9 +241,7 @@ export default function MyFolderList() {
                   </div>
                   <p className="mt-2 text-sm text-gray-500 line-clamp-2">{folder.description}</p>
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#e0e0fe] text-[#4f46e5]">
-                      {folder.items} items
-                    </span>
+                    
                   </div>
                 </div>
               </Link>
@@ -315,6 +317,32 @@ export default function MyFolderList() {
               </p>
             </div>
           )}
+        </Modal.Body>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={isDeleteModal} onHide={() => setIsDeleteModal(false)} className="modal-top">
+        <Modal.Header closeButton className="border-b border-gray-200">
+          <Modal.Title className="text-xl font-semibold text-gray-900">Confirm Removal</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-6">
+          <p className="text-gray-700">
+            Are you sure you want to remove this folder from the class?
+          </p>
+          <div className="mt-6 flex justify-end space-x-3">
+            <button
+              onClick={() => setIsDeleteModal(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4f46e5]"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => handleRemoveFolder(selectedFolder?.folderId)}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            >
+              Remove
+            </button>
+          </div>
         </Modal.Body>
       </Modal>
     </div>
