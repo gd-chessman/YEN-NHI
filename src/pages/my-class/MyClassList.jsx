@@ -140,7 +140,7 @@ export default function MyClassList() {
 
     const handleJoinClass = async () => {
         if (!joinClassId.trim()) {
-            toast.error('Please enter a class ID');
+            toast.error('Please enter a class code');
             return;
         }
 
