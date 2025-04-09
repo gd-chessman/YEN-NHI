@@ -215,6 +215,9 @@ export default function MyClassList() {
                                     <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
                                         {myClass.items || 0} items
                                     </span>
+                                    <span className="text-sm bg-[#e0e0fe] px-3 py-1 rounded-full text-[#4f46e5]">
+                                        {myClass.members?.length || 0} members
+                                    </span>
                                 </div>
                             </div>
                         </Link>
