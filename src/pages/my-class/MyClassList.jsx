@@ -2,7 +2,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import React, { useState, useEffect } from 'react';
 import { BiSearch, BiSolidFolder } from 'react-icons/bi';
-import { IoAddOutline, IoSearchOutline, IoShareOutline } from "react-icons/io5";
+import { IoAddOutline, IoSearchOutline, IoShareOutline, IoTrashOutline } from "react-icons/io5";
 import { useForm } from 'react-hook-form';
 import api from "../../apis/api";
 import { Link } from 'react-router-dom';
@@ -21,6 +21,8 @@ export default function MyClassList() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [joinClassId, setJoinClassId] = useState('');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [classToDelete, setClassToDelete] = useState(null);
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
     // Gọi API khi component mount
@@ -31,13 +33,10 @@ export default function MyClassList() {
     // Hàm lấy dữ liệu từ API
     const fetchData = async () => {
         try {
-            // Lấy dữ liệu myClasses
-            const myClassesResponse = await api.get("/v1/my-class/me");
-            setMyClasses(myClassesResponse.data);
-            
-            // Lấy danh sách joined classes
-            const joinedClassesResponse = await api.get("/v1/my-class/joined");
-            setJoinedClasses(joinedClassesResponse.data);
+            // Lấy dữ liệu từ API mới
+            const response = await api.get("/v1/my-class/classes");
+            setMyClasses(response.data.myClasses);
+            setJoinedClasses(response.data.joinedClasses);
         } catch (error) {
             console.error("Error fetching data:", error);
             toast.error('Failed to fetch data');
@@ -141,6 +140,23 @@ export default function MyClassList() {
         }
     };
 
+    const handleDeleteClass = async (classId) => {
+        try {
+            await api.delete(`/v1/my-class/${classId}`);
+            toast.success('Class deleted successfully');
+            fetchData(); // Refresh the list
+            setShowDeleteModal(false);
+        } catch (error) {
+            console.error('Error deleting class:', error);
+            toast.error('Failed to delete class');
+        }
+    };
+
+    const confirmDelete = (classId, title) => {
+        setClassToDelete({ id: classId, title });
+        setShowDeleteModal(true);
+    };
+
     return (
         <main className="flex-1 px-6 py-4">
             {/* Search Bar */}
@@ -205,6 +221,19 @@ export default function MyClassList() {
                                             <IoShareOutline className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" />
                                             <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                                                 Share class
+                                            </span>
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                confirmDelete(myClass.myClassId, myClass.title);
+                                            }}
+                                            className="group relative inline-flex items-center justify-center p-1.5 rounded-full hover:bg-gray-50 transition-colors duration-200 focus:outline-none border-0"
+                                            title="Delete class"
+                                        >
+                                            <IoTrashOutline className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" />
+                                            <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                                                Delete class
                                             </span>
                                         </button>
                                     </div>
@@ -377,6 +406,22 @@ export default function MyClassList() {
                         )}
                     </div>
                 </Modal.Body>
+            </Modal>
+            <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title style={{ fontWeight: "700" }}>Delete Class</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>Are you sure you want to delete the class "{classToDelete?.title}"? This action cannot be undone.</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                        Cancel
+                    </Button>
+                    <Button variant="danger" onClick={() => handleDeleteClass(classToDelete?.id)}>
+                        Delete
+                    </Button>
+                </Modal.Footer>
             </Modal>
             <ToastContainer />
         </main>
