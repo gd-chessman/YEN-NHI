@@ -20,14 +20,14 @@ public class MyClassShareRequestController {
     @Autowired
     private IMyClassShareRequestService shareRequestService;
 
-    @PostMapping("/{myClassId}")
-    public ResponseEntity<?> createShareRequest(@PathVariable Long myClassId) {
+    @PostMapping("/{classCode}")
+    public ResponseEntity<?> createShareRequest(@PathVariable String classCode) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UserPrincipal user = (UserPrincipal) authentication.getPrincipal();
             Long userId = user.getId();
 
-            MyClassShareRequest request = shareRequestService.createShareRequest(myClassId, userId);
+            MyClassShareRequest request = shareRequestService.createShareRequestByClassCode(classCode, userId);
             return new ResponseEntity<>(request, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);

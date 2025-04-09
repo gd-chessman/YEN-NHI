@@ -36,6 +36,9 @@ public class MyClass {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "class_code", unique = true, length = 8)
+    private String classCode;
+
     @ManyToMany(mappedBy = "myClasses")
     @JsonIgnore
     private Set<Folder> folders = new HashSet<>();
@@ -59,6 +62,19 @@ public class MyClass {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (classCode == null) {
+            classCode = generateClassCode();
+        }
+    }
+
+    private String generateClassCode() {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder code = new StringBuilder();
+        for (int i = 0; i < 8; i++) {
+            int index = (int) (Math.random() * characters.length());
+            code.append(characters.charAt(index));
+        }
+        return code.toString();
     }
 
     @PreUpdate

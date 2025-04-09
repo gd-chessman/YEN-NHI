@@ -19,33 +19,6 @@ public class MyClassShareRequestServiceImpl implements IMyClassShareRequestServi
     @Autowired
     private IMyClassRepository myClassRepository;
 
-    @Override
-    public MyClassShareRequest createShareRequest(Long myClassId, Long requesterId) {
-        if (hasPendingRequest(myClassId, requesterId)) {
-            throw new RuntimeException("You already have a pending request for this class");
-        }
-
-        MyClass myClass = myClassRepository.findById(myClassId)
-                .orElseThrow(() -> new RuntimeException("Class not found"));
-                
-        // Kiểm tra nếu người dùng là owner của lớp
-        if (myClass.getOwners() != null && myClass.getOwners().getUserId().equals(requesterId)) {
-            throw new RuntimeException("You are already the owner of this class");
-        }
-        
-        // Kiểm tra nếu người dùng đã là thành viên của lớp
-        if (myClass.getMembers().stream().anyMatch(member -> member.getUserId().equals(requesterId))) {
-            throw new RuntimeException("You are already a member of this class");
-        }
-
-        MyClassShareRequest request = MyClassShareRequest.builder()
-                .myClass(myClass)
-                .requester(new AppUser(requesterId))
-                .status(ShareRequestStatus.PENDING)
-                .build();
-
-        return shareRequestRepository.save(request);
-    }
 
     @Override
     public List<MyClassShareRequest> getPendingRequests() {
@@ -88,5 +61,33 @@ public class MyClassShareRequestServiceImpl implements IMyClassShareRequestServi
     @Override
     public boolean hasPendingRequest(Long myClassId, Long userId) {
         return shareRequestRepository.existsByMyClass_MyClassIdAndRequester_UserId(myClassId, userId);
+    }
+
+    @Override
+    public MyClassShareRequest createShareRequestByClassCode(String classCode, Long requesterId) {
+        MyClass myClass = myClassRepository.findByClassCode(classCode)
+                .orElseThrow(() -> new RuntimeException("Class not found with code: " + classCode));
+
+        if (hasPendingRequest(myClass.getMyClassId(), requesterId)) {
+            throw new RuntimeException("You already have a pending request for this class");
+        }
+                
+        // Kiểm tra nếu người dùng là owner của lớp
+        if (myClass.getOwners() != null && myClass.getOwners().getUserId().equals(requesterId)) {
+            throw new RuntimeException("You are already the owner of this class");
+        }
+        
+        // Kiểm tra nếu người dùng đã là thành viên của lớp
+        if (myClass.getMembers().stream().anyMatch(member -> member.getUserId().equals(requesterId))) {
+            throw new RuntimeException("You are already a member of this class");
+        }
+
+        MyClassShareRequest request = MyClassShareRequest.builder()
+                .myClass(myClass)
+                .requester(new AppUser(requesterId))
+                .status(ShareRequestStatus.PENDING)
+                .build();
+
+        return shareRequestRepository.save(request);
     }
 } 
