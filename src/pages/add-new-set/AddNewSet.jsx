@@ -211,7 +211,15 @@ function AddNewSet() {
     };
 
     const handleTagsChange = (event) => {
-        setTags(event.target.value);
+        const newTags = event.target.value;
+        const tagCount = newTags.split(',').filter(tag => tag.trim()).length;
+        
+        if (tagCount > 5) {
+            toast.error("Maximum 5 tags allowed");
+            return;
+        }
+        
+        setTags(newTags);
     };
 
     const handleDeleteTag = (tagToDelete) => {
@@ -325,6 +333,12 @@ function AddNewSet() {
 
         if (isFreeUser && isAnonymous) {
             toast.error("Free user cannot set anonymous. Đòi hỏi ít thôi");
+            return;
+        }
+
+        const tagCount = tags.split(',').filter(tag => tag.trim()).length;
+        if (tagCount > 5) {
+            toast.error("Maximum 5 tags allowed");
             return;
         }
 
@@ -445,22 +459,31 @@ function AddNewSet() {
                                 />
                             ))}
                         </Stack>
-                        <input
-                            type="text"
-                            style={{
-                                border: "none",
-                                outline: "none",
-                                height: "40px",
-                                width: "100%",
-                                fontWeight: "bold",
-                                padding: "10px",
-                                fontSize: "15px",
-                                backgroundColor: "transparent"
-                            }}
-                            value={tags}
-                            onChange={handleTagsChange}
-                            placeholder="Tags (comma separated) ..."
-                        />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <input
+                                type="text"
+                                style={{
+                                    border: "none",
+                                    outline: "none",
+                                    height: "40px",
+                                    width: "100%",
+                                    fontWeight: "bold",
+                                    padding: "10px",
+                                    fontSize: "15px",
+                                    backgroundColor: "transparent"
+                                }}
+                                value={tags}
+                                onChange={handleTagsChange}
+                                placeholder="Tags (comma separated) ..."
+                            />
+                            <span style={{ 
+                                fontSize: '14px', 
+                                color: '#666',
+                                whiteSpace: 'nowrap'
+                            }}>
+                                {tags.split(',').filter(tag => tag.trim()).length}/5 tags
+                            </span>
+                        </Box>
                     </Box>
                 </Box>
 
