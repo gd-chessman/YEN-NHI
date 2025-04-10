@@ -39,6 +39,7 @@ function AddNewSet() {
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
+    const [tags, setTags] = useState("");
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [privacy, setPrivacy] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState(1);
@@ -207,6 +208,10 @@ function AddNewSet() {
         setPrivacy(event.target.value === "true");
     };
 
+    const handleTagsChange = (event) => {
+        setTags(event.target.value);
+    };
+
     const handleParseChangedImportText = (text, useMotipQAChange, termSeparator, cardSeparator, hasImage) => {
         text = convertHtmlToText(text);
         let cards = [];
@@ -336,6 +341,7 @@ function AddNewSet() {
                 isAnonymous,
                 sharingMode: privacy,
                 categoryId: selectedCategory,
+                tagNames: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
                 flashcards: newListCards
             };
             const res = await api.post("/v1/set/create-new-set", setData);
@@ -382,21 +388,39 @@ function AddNewSet() {
                     placeholder="Give a title (e.g: Software Testing MCQ - Fall 2024)"
                 />
 
-                <input
-                    type="text"
-                    style={{
-                        border: "hidden",
-                        height: "50px",
-                        width: "100%",
-                        fontWeight: "bold",
-                        padding: "20px",
-                        fontSize: "15px",
-                        borderRadius: "15px",
-                    }}
-                    value={description}
-                    onChange={(event) => setDescription(event.target.value)}
-                    placeholder="Description ..."
-                />
+                <Box sx={{display: "flex", flexDirection: {xs: "column", md: "row"}, gap: "20px"}}>
+                    <input
+                        type="text"
+                        style={{
+                            border: "hidden",
+                            height: "50px",
+                            width: "100%",
+                            fontWeight: "bold",
+                            padding: "20px",
+                            fontSize: "15px",
+                            borderRadius: "15px",
+                        }}
+                        value={description}
+                        onChange={(event) => setDescription(event.target.value)}
+                        placeholder="Description ..."
+                    />
+
+                    <input
+                        type="text"
+                        style={{
+                            border: "hidden",
+                            height: "50px",
+                            width: "100%",
+                            fontWeight: "bold",
+                            padding: "20px",
+                            fontSize: "15px",
+                            borderRadius: "15px",
+                        }}
+                        value={tags}
+                        onChange={handleTagsChange}
+                        placeholder="Tags (comma separated) ..."
+                    />
+                </Box>
 
                 <Box sx={{display: "flex", flexDirection: {xs: "column", md: "row"}, gap: "20px"}}>
                     <Box width="100%" p={2}>
