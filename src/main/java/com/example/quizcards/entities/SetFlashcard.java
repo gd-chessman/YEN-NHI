@@ -11,6 +11,8 @@ import org.hibernate.annotations.GenerationTime;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
@@ -63,4 +65,13 @@ public class SetFlashcard implements Serializable {
     @ManyToOne
     @JoinColumn(name = "category_id", referencedColumnName = "category_id")
     private CategorySetFlashcard category;
+
+    @ManyToMany
+    @JoinTable(
+        name = "set_flashcard_tag",
+        joinColumns = @JoinColumn(name = "set_flashcard_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    @Size(max = 5, message = "A set flashcard can have at most 5 tags")
+    private Set<Tag> tags = new HashSet<>();
 }
