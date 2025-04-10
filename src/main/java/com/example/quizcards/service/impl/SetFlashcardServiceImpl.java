@@ -100,6 +100,9 @@ public class SetFlashcardServiceImpl implements ISetFlashcardService {
 
         // Add tags if provided
         if (request.getTagNames() != null && !request.getTagNames().isEmpty()) {
+            if (request.getTagNames().size() > 5) {
+                throw new BadRequestException("A set flashcard can have at most 5 tags");
+            }
             Set<Tag> tags = tagService.getOrCreateTags(request.getTagNames());
             set.setTags(tags);
         }
