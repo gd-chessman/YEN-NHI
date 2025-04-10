@@ -136,7 +136,8 @@ public class SetFlashcardController {
                     request.getIsAnonymous(),
                     request.getSharingMode(),
                     request.getUserId(),
-                    request.getCategoryId());
+                    request.getCategoryId(),
+                    request.getTagNames());
             return ResponseEntity.status(HttpStatus.CREATED).body("Set Flashcard created successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while creating the set flashcard");

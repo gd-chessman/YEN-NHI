@@ -14,6 +14,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ISetFlashcardService {
     SetFlashcard findById(Long setId);
@@ -32,7 +33,8 @@ public interface ISetFlashcardService {
                          Boolean isAnonymous,
                          Boolean sharingMode,
                          Long userId,
-                         Long categoryId);
+                         Long categoryId,
+                         Set<String> tagNames);
 
     void deleteSetFlashcardAdmin(Long setId);
 
