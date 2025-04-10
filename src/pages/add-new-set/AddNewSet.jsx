@@ -19,6 +19,8 @@ import {storage} from "../../configs/firebaseConfig.js";
 import {useNavigate} from "react-router-dom";
 import {htmlToText} from "html-to-text";
 import {convertHtmlToText, textToHtml} from "../../utils/HtmlAndFileUtils.jsx";
+import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
 
 import ImportTextComp from "src/components/ImportText/ImportTextComp.jsx";
 import "./index.css";
@@ -210,6 +212,12 @@ function AddNewSet() {
 
     const handleTagsChange = (event) => {
         setTags(event.target.value);
+    };
+
+    const handleDeleteTag = (tagToDelete) => {
+        const currentTags = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+        const newTags = currentTags.filter(tag => tag !== tagToDelete);
+        setTags(newTags.join(', '));
     };
 
     const handleParseChangedImportText = (text, useMotipQAChange, termSeparator, cardSeparator, hasImage) => {
@@ -405,21 +413,55 @@ function AddNewSet() {
                         placeholder="Description ..."
                     />
 
-                    <input
-                        type="text"
-                        style={{
-                            border: "hidden",
-                            height: "50px",
-                            width: "100%",
-                            fontWeight: "bold",
-                            padding: "20px",
-                            fontSize: "15px",
-                            borderRadius: "15px",
-                        }}
-                        value={tags}
-                        onChange={handleTagsChange}
-                        placeholder="Tags (comma separated) ..."
-                    />
+                    <Box sx={{ 
+                        width: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        backgroundColor: "white",
+                        borderRadius: "15px",
+                        padding: "15px",
+                        gap: "10px"
+                    }}>
+                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                            {tags.split(',').map(tag => tag.trim()).filter(tag => tag).map((tag, index) => (
+                                <Chip
+                                    key={index}
+                                    label={tag}
+                                    onDelete={() => handleDeleteTag(tag)}
+                                    sx={{
+                                        backgroundColor: '#e0e0fe',
+                                        fontSize: '16px',
+                                        height: '32px',
+                                        '& .MuiChip-label': {
+                                            padding: '0 8px',
+                                        },
+                                        '& .MuiChip-deleteIcon': {
+                                            color: '#666',
+                                            '&:hover': {
+                                                color: '#333',
+                                            },
+                                        },
+                                    }}
+                                />
+                            ))}
+                        </Stack>
+                        <input
+                            type="text"
+                            style={{
+                                border: "none",
+                                outline: "none",
+                                height: "40px",
+                                width: "100%",
+                                fontWeight: "bold",
+                                padding: "10px",
+                                fontSize: "15px",
+                                backgroundColor: "transparent"
+                            }}
+                            value={tags}
+                            onChange={handleTagsChange}
+                            placeholder="Tags (comma separated) ..."
+                        />
+                    </Box>
                 </Box>
 
                 <Box sx={{display: "flex", flexDirection: {xs: "column", md: "row"}, gap: "20px"}}>
