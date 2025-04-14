@@ -50,6 +50,7 @@ public class MatchingService implements IMatchingService {
             matching.setFlashcard(flashcard);
             matching.setIsCorrect(false);
 //            matching.setSetCode(String.valueOf(flashcard.getSet().getSetId()));
+            matching.setWrongCount(0);
             matching.setUser(new AppUser(userId));
 
             // Assign round number based on index
@@ -100,5 +101,10 @@ public class MatchingService implements IMatchingService {
     @Override
     public void changeIsCorrect(Long matchingId) {
         iMatchingRepository.updateIsCorrectByMatchingId(matchingId);
+    }
+
+    @Override
+    public void incrementWrongCount(Long matchingId) {
+        iMatchingRepository.incrementWrongCountByMatchingId(matchingId);
     }
 }

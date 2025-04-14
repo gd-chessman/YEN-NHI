@@ -13,4 +13,6 @@ public interface IMatchingService {
     List<Matching> getAll();
 
     void changeIsCorrect(Long matchingId);
+
+    void incrementWrongCount(Long matchingId);
 }
