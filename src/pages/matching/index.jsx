@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import api from "../../apis/api"
 import { IoIosArrowBack } from "react-icons/io"
@@ -17,6 +17,8 @@ export default function Matching() {
   const [correctAnswers, setCorrectAnswers] = useState(0)
   const [shuffledAnswers, setShuffledAnswers] = useState([])
   const [incorrectPair, setIncorrectPair] = useState({ question: null, answer: null })
+  const processedWrongAnswersRef = useRef(new Set())
+  const isProcessingRef = useRef(false)
   const navigate = useNavigate()
   const setId = searchParams.get("setId")
   const newMatching = searchParams.get("new")
@@ -96,7 +98,7 @@ export default function Matching() {
 
   // Check if selected question and answer form a pair
   useEffect(() => {
-    if (selectedQuestion !== null && selectedAnswer !== null) {
+    if (selectedQuestion !== null && selectedAnswer !== null && !isProcessingRef.current) {
       const questionItem = groupedByRound?.[currentRound]?.[selectedQuestion]
       // Get the actual item from the shuffled index
       const actualAnswerIndex = shuffledAnswers[selectedAnswer]
@@ -117,6 +119,21 @@ export default function Matching() {
       } else {
         // Incorrect match - set the incorrect pair
         setIncorrectPair({ question: selectedQuestion, answer: selectedAnswer })
+
+        // Call API for incorrect answer
+        if (questionItem) {
+          isProcessingRef.current = true
+          const fetchData = async () => {
+            try {
+              await api.put(`/v1/matching/wrong/${questionItem.matchingId}`)
+            } catch (error) {
+              console.error("Error updating wrong answer:", error)
+            } finally {
+              isProcessingRef.current = false
+            }
+          }
+          fetchData()
+        }
 
         // Reset incorrect pair after 0.5 seconds
         setTimeout(() => {
