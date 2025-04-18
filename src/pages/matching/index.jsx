@@ -35,6 +35,14 @@ export default function Matching() {
         }
         const response = await api.get(`/v1/matching`)
         setData(response.data)
+
+        // Check if ROUND_1 has more than 5 items
+        const round1Items = response.data.filter(item => item.roundNumber === "ROUND_1")
+        if (round1Items.length > 5) {
+          await api.post(`/v1/matching/${setId}`)
+          const updatedResponse = await api.get(`/v1/matching`)
+          setData(updatedResponse.data)
+        }
       } catch (error) {
         console.error("Error fetching data:", error)
       }
@@ -214,7 +222,7 @@ export default function Matching() {
 
   return (
     <>
-      {isGameCompleted && <PracticeComplete />}
+      {isGameCompleted && <PracticeComplete  />}
       {!isGameCompleted &&
         <>
           <header className="w-full fixed z-50 top-0 px-6 flex items-center justify-between h-[4.8125rem] bg-[#ededff] shadow-[0px_10px_60px_0px_rgba(0,0,0,0.15)]">

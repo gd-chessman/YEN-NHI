@@ -1,124 +1,127 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { IoIosArrowBack } from "react-icons/io";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import api from "../../apis/api";
 
 export default function PracticeComplete() {
-  const [isAnimating, setIsAnimating] = useState(true);
-  const navigate = useNavigate()
+  const [selectedEmoji, setSelectedEmoji] = useState(null);
+  const [matchingData, setMatchingData] = useState([]);
+  const [searchParams] = useSearchParams()
+  const setId = searchParams.get("setId")
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchMatchingData = async () => {
+      try {
+        const response = await api.get('/v1/matching');
+        setMatchingData(response.data);
+      } catch (error) {
+        console.error("Error fetching matching data:", error);
+      }
+    };
+
+    fetchMatchingData();
+  }, []);
+
+  const handleRestart = () => {
+    window.location.href = `/matching?setId=${setId}&new=1`;
+  }
+
+  // Calculate total wrongCount
+  const totalWrongCount = matchingData.reduce((sum, item) => sum + (item.wrongCount || 0), 0);
+
+  // Calculate total rounds
+  const totalRounds = matchingData.reduce((acc, item) => {
+    if (!acc.includes(item.roundNumber)) {
+      acc.push(item.roundNumber);
+    }
+    return acc;
+  }, []).length;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#1f3246] text-white">
-      <div className="w-full max-w-md px-4 py-8">
-        {/* Characters */}
-        <div className="mb-6 flex items-end justify-center space-x-4">
-          {/* Green Owl Character */}
-          <div className="relative">
-            <div className="h-20 w-16 rounded-full bg-[#5ac451]">
-              <div className="absolute -top-1 left-1/2 h-8 w-8 -translate-x-1/2 rounded-full bg-[#5ac451]"></div>
-              <div className="absolute left-1/2 top-3 h-3 w-3 -translate-x-[8px] rounded-full bg-white"></div>
-              <div className="absolute left-1/2 top-3 h-3 w-3 translate-x-[2px] rounded-full bg-white"></div>
-              <div className="absolute left-1/2 top-3 h-1.5 w-1.5 -translate-x-[7px] rounded-full bg-black"></div>
-              <div className="absolute left-1/2 top-3 h-1.5 w-1.5 translate-x-[3px] rounded-full bg-black"></div>
-              <div className="absolute left-1/2 top-8 h-2 w-4 -translate-x-1/2 rounded-full bg-[#f9a825]"></div>
+    <div className="min-h-screen bg-[#ededff] flex flex-col">
+      <header className="w-full fixed z-50 top-0 px-6 flex items-center justify-between h-[4.8125rem] bg-[#ededff] shadow-[0px_10px_60px_0px_rgba(0,0,0,0.15)]">
+        <button
+          className="rounded border-0 py-1 px-2"
+          onClick={() => navigate(-1)}
+        >
+          <IoIosArrowBack />
+        </button>
+        <b className="text-xl">Trắc nghiệm</b>
+        <button className="border-0 rounded py-1 px-2">
+          Set of {totalRounds * 5}
+        </button>
+      </header>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col md:flex-row pt-[4.8125rem] items-center justify-center gap-12 px-4">
+        {/* Left side - Congratulations */}
+        <div className="flex flex-col items-center justify-center p-6 text-center max-w-3xl">
+          <div className="relative mb-4">
+            <div className="text-[#0e22e9] text-3xl md:text-4xl font-bold tracking-wider">
+              CONGRATULATIONS!
             </div>
-            <div className="absolute bottom-0 left-1/2 h-2 w-16 -translate-x-1/2 rounded-md bg-[#333]"></div>
+            {/* Confetti decorations */}
+            <div className="absolute -top-10 -left-10 text-[#0e22e9] opacity-50">
+              ✨ 🎉
+            </div>
+            <div className="absolute -top-8 right-0 text-[#0e22e9] opacity-50">
+              🎊 ✨
+            </div>
           </div>
 
-          {/* Character with headband */}
-          <div className="relative">
-            <div className="h-24 w-16 rounded-full bg-[#8b5d3b]">
-              <div className="absolute -top-2 left-0 h-4 w-full bg-[#f9a825]"></div>
-              <div className="absolute left-1/2 top-6 h-2 w-8 -translate-x-1/2 rounded-full bg-white"></div>
-              <div className="absolute left-1/2 top-6 h-1 w-6 -translate-x-1/2 rounded-full bg-[#8b5d3b]"></div>
-              <div className="absolute bottom-0 left-0 h-12 w-full bg-[#4a9cf5]"></div>
-            </div>
-            <div className="absolute bottom-0 left-1/2 h-2 w-16 -translate-x-1/2 rounded-md bg-[#333]"></div>
-          </div>
+          <h2 className="text-2xl font-bold mt-6 mb-4">
+            You are doing great,
+            <br />
+            keep learning!
+          </h2>
 
-          {/* Sparkle effect */}
-          <div className="absolute right-1/3 top-1/3">
-            <div className={`${isAnimating ? 'animate-spin-slow' : ''}`}>
-              <div className="h-1 w-6 bg-yellow-300"></div>
-              <div className="h-6 w-1 -translate-y-[14px] translate-x-[10px] rotate-90 bg-pink-500"></div>
-              <div className="h-1 w-6 -translate-y-[28px] translate-x-[0px] rotate-45 bg-green-400"></div>
-              <div className="h-6 w-1 -translate-y-[42px] translate-x-[10px] rotate-[135deg] bg-blue-400"></div>
-            </div>
-          </div>
+          <button className="bg-[#0e22e9] text-white font-semibold py-3 px-6 rounded-full text-base w-full max-w-xs border-0">
+            Continue to next round
+          </button>
         </div>
 
-        {/* Practice Complete Text */}
-        <h1 className="mb-8 text-center text-3xl font-bold text-yellow-400">
-          Practice Complete!
-        </h1>
-
-        {/* Stats Boxes */}
-        <div className="mb-12 flex justify-between gap-4">
-          {/* XP Box */}
-          <div className="flex-1 overflow-hidden rounded-xl border-4 border-yellow-400">
-            <div className="bg-yellow-400 py-2 text-center font-bold">
-              TOTAL XP
+        {/* Right side - Stats */}
+        <div className="flex flex-col gap-4 max-w-md">
+          {/* Satisfaction */}
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <h3 className="font-semibold mb-4">Satisfy with your work?</h3>
+            <div className="flex justify-between">
+              {["😄", "😊", "😐", "😢", "😭"].map((emoji, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedEmoji(index)}
+                  className={`text-2xl p-2 rounded-full transition-all border-0 ${
+                    selectedEmoji === index ? "bg-[#e0e0fe] scale-110" : ""
+                  }`}
+                >
+                  {emoji}
+                </button>
+              ))}
             </div>
-            <div className="flex items-center justify-center space-x-2 bg-[#1a2a3a] py-4">
-              {/* Custom Zap icon */}
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="24" 
-                height="24" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className="h-6 w-6 text-yellow-400"
-              >
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-              </svg>
-              <span className="text-2xl font-bold text-yellow-400">10</span>
+            <div className="flex justify-between text-xs mt-1 px-1">
+              <span>Satisfied</span>
+              <span>Not at all</span>
             </div>
           </div>
 
-          {/* Score Box */}
-          <div className="flex-1 overflow-hidden rounded-xl border-4 border-green-400">
-            <div className="bg-green-400 py-2 text-center font-bold">
-              AMAZING
-            </div>
-            <div className="flex items-center justify-center space-x-2 bg-[#1a2a3a] py-4">
-              {/* Custom CheckCircle icon */}
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="24" 
-                height="24" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className="h-6 w-6 text-green-400"
-              >
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-              </svg>
-              <span className="text-2xl font-bold text-green-400">100%</span>
-            </div>
+          <div className="bg-[#f5b2b2] rounded-xl p-4 flex justify-between items-center">
+            <span className="font-semibold">Wrong match</span>
+            <span className="text-3xl font-bold text-[#e73d3d]">{totalWrongCount}</span>
           </div>
-        </div>
 
-        {/* Buttons */}
-        <div className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:space-x-4 sm:space-y-0">
-          <button 
-            className="rounded-md border border-gray-500 bg-transparent px-4 py-2 text-gray-300 transition-colors hover:bg-gray-700 hover:text-white"
-          >
-            REVIEW LESSON
-          </button>
-          <button 
-            className="rounded-md bg-green-400 px-4 py-2 font-bold text-black transition-colors hover:bg-green-500"
-            onClick={()=> navigate(-1)}
-          >
-            CONTINUE
-          </button>
+          {/* Restart */}
+          <div className="bg-[#e0e0fe] rounded-xl p-4 shadow-sm cursor-pointer" onClick={()=> handleRestart()}>
+            <h3 className="font-semibold">Restart matching</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Do it again and memorize better.
+            </p>
+            <button className="bg-white text-gray-700 px-4 py-2 rounded-full text-sm border-0">
+              {matchingData.length} terms
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
