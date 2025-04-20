@@ -23,6 +23,9 @@ export default function MyClassList() {
     const [joinClassId, setJoinClassId] = useState('');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [classToDelete, setClassToDelete] = useState(null);
+    const [showRejectConfirmModal, setShowRejectConfirmModal] = useState(false);
+    const [requestToReject, setRequestToReject] = useState(null);
+    const [pendingRejectRequest, setPendingRejectRequest] = useState(null);
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
     // Gọi API khi component mount
@@ -68,6 +71,7 @@ export default function MyClassList() {
             const res = await api.post("/v1/my-class", data);
             reset(); // Reset form sau khi submit
             fetchData(); // Gọi lại API để cập nhật danh sách
+            setShowModal(false); // Đóng modal sau khi thêm thành công
         } catch (error) {
             console.error("Error submitting data:", error);
         }
@@ -127,10 +131,36 @@ export default function MyClassList() {
             if (selectedClass) {
                 handleShareClass(selectedClass);
             }
+            setPendingRejectRequest(null);
         } catch (error) {
             console.error('Error rejecting request:', error);
             toast.error(error.response?.data || 'Failed to reject request');
         }
+    };
+
+    const handleRejectClick = (requestId) => {
+        if (pendingRejectRequest === requestId) {
+            // Second click - proceed with rejection
+            handleRejectRequest(requestId);
+        } else {
+            // First click - show warning
+            setPendingRejectRequest(requestId);
+            toast.warning('Click the Reject button again to confirm rejection', {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+        }
+    };
+
+    const confirmReject = (requestId) => {
+        setRequestToReject(requestId);
+        setShowRejectConfirmModal(true);
     };
 
     const copyToClipboard = () => {
@@ -211,6 +241,13 @@ export default function MyClassList() {
                 <div className="max-w-5xl mx-auto mb-12">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-2xl font-bold">My classes</h2>
+                        <button 
+                            className="bg-[#0e22e9] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#0a1bb3] transition-colors border-0"
+                            onClick={() => setShowModal(true)}
+                        >
+                            <IoAddOutline size={20} />
+                            <span>Add new Class</span>
+                        </button>
                     </div>
 
                     {/* Class Cards Grid */}
@@ -340,9 +377,6 @@ export default function MyClassList() {
                 </div>
             </div>
 
-            <button className='fixed bottom-10 right-10 bg-[#0e22e9] p-2.5 flex border-none rounded' onClick={() => setShowModal(true)}>
-                <IoAddOutline size={24} color='white' />
-            </button>
             <Modal show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title style={{ fontWeight: "700" }}>Create My class</Modal.Title>
@@ -389,7 +423,7 @@ export default function MyClassList() {
                         {joinRequests.length === 0 ? (
                             <p className="text-gray-500">No pending requests</p>
                         ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
                                 {joinRequests.map((request) => (
                                     <div key={request.requestId} className="flex items-center justify-between p-3 border rounded">
                                         <div>
@@ -410,7 +444,7 @@ export default function MyClassList() {
                                                     <Button
                                                         variant="danger"
                                                         size="sm"
-                                                        onClick={() => handleRejectRequest(request.requestId)}
+                                                        onClick={() => handleRejectClick(request.requestId)}
                                                     >
                                                         Reject
                                                     </Button>
@@ -437,6 +471,23 @@ export default function MyClassList() {
                     </Button>
                     <Button variant="danger" onClick={() => handleDeleteClass(classToDelete?.id)}>
                         Delete
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={showRejectConfirmModal} onHide={() => setShowRejectConfirmModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title style={{ fontWeight: "700" }}>Reject Request</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>Are you sure you want to reject this join request? This action cannot be undone.</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowRejectConfirmModal(false)}>
+                        Cancel
+                    </Button>
+                    <Button variant="danger" onClick={() => handleRejectRequest(requestToReject)}>
+                        Reject
                     </Button>
                 </Modal.Footer>
             </Modal>
