@@ -14,6 +14,7 @@ const DetailListSet = () => {
     const queryParams = new URLSearchParams(location.search);
     const userId = queryParams.get('user_id');
     const categoryName = queryParams.get('category_name');
+    const tagName = queryParams.get('tag_name');
     const [totalElements, setTotalElements] = useState(100);
     const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE);
     const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
@@ -33,7 +34,11 @@ const DetailListSet = () => {
             cardsTableRef.current.style.pointerEvents = "none";
         }
         fetchSetFilter({
-            userId, categoryName, page: newPage, size: rowsPerPage,
+            userId, 
+            categoryName, 
+            tagName,
+            page: newPage, 
+            size: rowsPerPage,
         }).finally(() => {
             if (cardsTableRef.current) {
                 cardsTableRef.current.style.opacity = "1";
@@ -51,7 +56,11 @@ const DetailListSet = () => {
             cardsTableRef.current.style.pointerEvents = "none";
         }
         fetchSetFilter({
-            userId, categoryName, page: DEFAULT_PAGE, size: newRowsPerPage,
+            userId, 
+            categoryName, 
+            tagName,
+            page: DEFAULT_PAGE, 
+            size: newRowsPerPage,
         }).finally(() => {
             if (cardsTableRef.current) {
                 cardsTableRef.current.style.opacity = "1";
@@ -60,16 +69,27 @@ const DetailListSet = () => {
         });
     };
 
-    const fetchSetFilter = async ({userId, categoryName, page, size}) => {
+    const fetchSetFilter = async ({userId, categoryName, tagName, page, size}) => {
         try {
-            const res = await api.get("/v1/set/filter", {
-                params: {
-                    user_id: userId,
-                    category_name: categoryName,
-                    page: page,
-                    size: size,
-                },
-            });
+            let res;
+            if (tagName) {
+                res = await api.get("/v1/set/filter-by-tag", {
+                    params: {
+                        tag_name: tagName,
+                        page: page,
+                        size: size,
+                    },
+                });
+            } else {
+                res = await api.get("/v1/set/filter", {
+                    params: {
+                        user_id: userId,
+                        category_name: categoryName,
+                        page: page,
+                        size: size,
+                    },
+                });
+            }
             setSetFiltered(res.data.content);
             setTotalElements(res.data.totalElements);
             if (res.data.content && userId) {
@@ -90,7 +110,11 @@ const DetailListSet = () => {
 
     useEffect(() => {
         fetchSetFilter({
-            userId, categoryName, page: currentPage, size: rowsPerPage,
+            userId, 
+            categoryName, 
+            tagName,
+            page: currentPage, 
+            size: rowsPerPage,
         }).finally(() => setOnLoading(false));
     }, []);
 
@@ -115,6 +139,9 @@ const DetailListSet = () => {
                                 )}
                                 {analysisResponse.categoryName && (
                                     <> with category: <u><i>{analysisResponse.categoryName}</i></u></>
+                                )}
+                                {tagName && (
+                                    <> with tag: <u><i>{tagName}</i></u></>
                                 )}
                             </b>
                         </b>
