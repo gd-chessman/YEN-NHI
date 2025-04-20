@@ -93,6 +93,7 @@ const ViewSet = () => {
         avatarUserCreated: "",
         numberSetPublic: 0,
         userId: null,
+        tags: "",
     });
 
     const [dataSettings, setDataSettings] = useState({
@@ -189,6 +190,7 @@ const ViewSet = () => {
         handleDataInSetChange("usernameCreated", resSetInfo.data.data.userName);
         handleDataInSetChange("avatarUserCreated", resSetInfo.data.data.avatar);
         handleDataInSetChange("numberSetPublic", resSetPublicCount.data.data);
+        handleDataInSetChange("tags", resSetInfo.data.data.tags || "");
 
         document.title = resSetInfo.data.data.title;
     };
@@ -628,6 +630,38 @@ const ViewSet = () => {
                                     {dataInSet.topic}
                                 </div>
                             </div>
+                            {dataInSet.tags && dataInSet.tags.trim() !== "" && (
+                                <div className="tags-container" style={{ marginTop: '10px', display: 'flex', alignItems: 'center' }}>
+                                    <span className="tags-label" style={{ marginRight: '10px' }}>Tags:</span>
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        overflowX: 'auto',
+                                        whiteSpace: 'nowrap',
+                                        gap: '8px',
+                                        paddingBottom: '5px'
+                                    }}>
+                                        {dataInSet.tags.split(',').map((tag, index) => (
+                                            <span 
+                                                key={index}
+                                                style={{
+                                                    padding: '4px 8px',
+                                                    backgroundColor: '#e0e0fe',
+                                                    borderRadius: '4px',
+                                                    fontSize: '14px',
+                                                    color: '#000',
+                                                    flexShrink: 0,
+                                                    cursor: 'pointer'
+                                                }}
+                                                onClick={() => {
+                                                    navigate(`/user/detail-list-set?tag_name=${tag.trim()}`);
+                                                }}
+                                            >
+                                                {tag.trim()}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             <div className="flashcard-container">
                                 <FlashcardArray
                                     cards={dataCards.displayCards}
