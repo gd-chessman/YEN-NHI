@@ -339,4 +339,10 @@ public class SetFlashcardServiceImpl implements ISetFlashcardService {
     public List<SearchSetFlashResponse> searchByMyCourse(QueryDTO queryDTO, Long userId) {
         return setFlashcardRepository.searchByMyCourse(queryDTO.getTitle(), userId);
     }
+
+    @Override
+    public Page<ISetFlashcardDTO> filterByTagName(String tagName, Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return setFlashcardRepository.filterByTagName(tagName, userId, pageable) ;
+    }
 }

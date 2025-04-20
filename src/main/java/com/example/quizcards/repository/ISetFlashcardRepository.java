@@ -587,6 +587,31 @@ public interface ISetFlashcardRepository extends JpaRepository<SetFlashcard, Lon
                 LIMIT 1;
             """, nativeQuery = true)
     Long getRandomIdSetFlashcard();
+
+    @Query(value = """
+            select s.set_id, s.title, s.description_set, s.created_at, s.updated_at, s.is_approved, s.is_anonymous, s.sharing_mode, a.last_name, a.first_name, a.user_name, a.avatar, c.category_name, COUNT(f.card_id) as total_card,
+                   GROUP_CONCAT(DISTINCT t.name) as tags
+            from set_flashcards s
+            join app_users a on s.user_id = a.user_id 
+            join category_set_flashcards c on s.category_id = c.category_id 
+            join flashcards f on f.set_id = s.set_id
+            join set_flashcard_tag sft on s.set_id = sft.set_flashcard_id
+            join tags t on sft.tag_id = t.tag_id
+            where t.name = :tag_name and (:user_id is null or s.user_id = :user_id or s.sharing_mode = true)
+            group by s.set_id, s.title, s.description_set, s.created_at, s.updated_at, s.is_approved, s.is_anonymous, s.sharing_mode, 
+                     a.last_name, a.first_name, a.user_name, a.avatar, c.category_name
+            """, 
+            countQuery = """
+                    select count(distinct s.set_id)
+                    from set_flashcards s
+                    join set_flashcard_tag sft on s.set_id = sft.set_flashcard_id
+                    join tags t on sft.tag_id = t.tag_id
+                    where t.name = :tag_name and (:user_id is null or s.user_id = :user_id or s.sharing_mode = true)
+                    """,
+            nativeQuery = true)
+    Page<ISetFlashcardDTO> filterByTagName(@Param("tag_name") String tagName, 
+                                          @Param("user_id") Long userId,
+                                          Pageable pageable);
 }
 
 

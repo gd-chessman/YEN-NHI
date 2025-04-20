@@ -86,4 +86,6 @@ public interface ISetFlashcardService {
 
     long countFlashcardsBySetId(Long setId);
     List<SearchSetFlashResponse> searchByMyCourse(QueryDTO queryDTO,Long userId);
+
+    Page<ISetFlashcardDTO> filterByTagName(String tagName, Long userId, int page, int size);
 }

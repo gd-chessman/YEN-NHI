@@ -277,4 +277,14 @@ public class SetFlashcardController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(FETCH_ERROR_MESSAGE);
         }
     }
+
+        @GetMapping("/filter-by-tag")
+    @PreAuthorize("hasAnyRole('ROLE_FREE_USER', 'ROLE_PREMIUM_USER', 'ROLE_ADMIN')")
+    public ResponseEntity<Page<ISetFlashcardDTO>> filterByTagName(
+            @RequestParam(value = "tag_name", defaultValue = "") String tagName,
+            @RequestParam(value = "user_id", defaultValue = "") Long userId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        return ResponseEntity.ok(setFlashcardService.filterByTagName(tagName, userId, page, size));
+    }
 }
