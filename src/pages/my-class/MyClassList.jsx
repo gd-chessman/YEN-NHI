@@ -2,7 +2,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import React, { useState, useEffect } from 'react';
 import { BiSearch, BiSolidFolder } from 'react-icons/bi';
-import { IoAddOutline, IoSearchOutline, IoShareOutline, IoTrashOutline } from "react-icons/io5";
+import { IoAddOutline, IoSearchOutline, IoShareOutline, IoTrashOutline, IoPeopleOutline } from "react-icons/io5";
 import { useForm } from 'react-hook-form';
 import api from "../../apis/api";
 import { Link } from 'react-router-dom';
@@ -40,7 +40,27 @@ export default function MyClassList() {
             const response = await api.get("/v1/my-class/classes", {
                 params: { query }
             });
-            setMyClasses(response.data.myClasses);
+            
+            // Lấy thông tin join requests cho mỗi lớp học
+            const classesWithRequests = await Promise.all(
+                response.data.myClasses.map(async (myClass) => {
+                    try {
+                        const requestsResponse = await api.get(`/v1/share-requests/my-class/${myClass.myClassId}`);
+                        return {
+                            ...myClass,
+                            joinRequests: requestsResponse.data.filter(request => request.status === 'PENDING').length
+                        };
+                    } catch (error) {
+                        console.error(`Error fetching requests for class ${myClass.myClassId}:`, error);
+                        return {
+                            ...myClass,
+                            joinRequests: 0
+                        };
+                    }
+                })
+            );
+
+            setMyClasses(classesWithRequests);
             setJoinedClasses(response.data.joinedClasses);
             setError(null);
         } catch (error) {
@@ -270,19 +290,26 @@ export default function MyClassList() {
                                                 <h3 className="text-lg font-medium text-gray-900">{myClass.title}</h3>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        handleShareClass(myClass.myClassId, myClass.classCode);
-                                                    }}
-                                                    className="group relative inline-flex items-center justify-center p-1.5 rounded-full hover:bg-gray-50 transition-colors duration-200 focus:outline-none border-0"
-                                                    title="Share class"
-                                                >
-                                                    <IoShareOutline className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" />
-                                                    <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                                                        Share class
-                                                    </span>
-                                                </button>
+                                                <div className="relative">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            handleShareClass(myClass.myClassId, myClass.classCode);
+                                                        }}
+                                                        className="group relative inline-flex items-center justify-center p-1.5 rounded-full hover:bg-gray-50 transition-colors duration-200 focus:outline-none border-0"
+                                                        title="User Join Request"
+                                                    >
+                                                        <IoPeopleOutline className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" />
+                                                        <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                                                            User Join Request
+                                                        </span>
+                                                    </button>
+                                                    {myClass.joinRequests > 0 && (
+                                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                                                            {myClass.joinRequests > 99 ? '99+' : myClass.joinRequests}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();
