@@ -48,7 +48,7 @@ public interface ISetFlashcardRepository extends JpaRepository<SetFlashcard, Lon
     //    @Query(value = """
 //            select s.set_id, s.title, s.description_set, s.created_at, s.updated_at, s.is_approved, s.is_anonymous, s.sharing_mode, a.last_name, a.first_name, a.user_name, a.avatar, c.category_name, COUNT(f.card_id) as total_card
 //            from set_flashcards s, app_users a, category_set_flashcards c, flashcards f
-//            where s.user_id = a.user_id and s.category_id = c.category_id and f.set_id = s.set_id and s.sharing_mode = true
+//            where s.user_id = a.user_id and s.category_id = c.category_id and s.sharing_mode = true
 //            group by s.set_id, s.title, s.description_set, s.created_at, s.updated_at, s.is_approved, s.is_anonymous, s.sharing_mode, a.last_name, a.first_name, a.user_name, a.avatar, c.category_name
 //            """, nativeQuery = true)
     @Query(value = """
@@ -111,10 +111,18 @@ public interface ISetFlashcardRepository extends JpaRepository<SetFlashcard, Lon
     List<ISetFlashcardDTO> findTop10SetFlashcardsPerCategory();
 
     @Query(value = """
-            select s.set_id, s.title, s.description_set, s.created_at, s.updated_at, s.is_approved, s.is_anonymous, s.sharing_mode, a.last_name, a.first_name, a.user_name,a.user_id, a.avatar, c.category_name, COUNT(f.card_id) as total_card
-            from set_flashcards s, app_users a, category_set_flashcards c, flashcards f
-            where s.user_id = a.user_id and s.category_id = c.category_id and s.set_id = :set_id and f.set_id = s.set_id
-            group by s.set_id, s.title, s.description_set, s.created_at, s.updated_at, s.is_approved, s.is_anonymous, s.sharing_mode, a.last_name, a.first_name, a.user_name, a.avatar, c.category_name
+            select s.set_id, s.title, s.description_set, s.created_at, s.updated_at, s.is_approved, s.is_anonymous, s.sharing_mode, 
+                   a.last_name, a.first_name, a.user_name,a.user_id, a.avatar, c.category_name, COUNT(f.card_id) as total_card,
+                   GROUP_CONCAT(DISTINCT t.name) as tags
+            from set_flashcards s
+            join app_users a on s.user_id = a.user_id 
+            join category_set_flashcards c on s.category_id = c.category_id 
+            join flashcards f on f.set_id = s.set_id
+            left join set_flashcard_tag sft on s.set_id = sft.set_flashcard_id
+            left join tags t on sft.tag_id = t.tag_id
+            where s.set_id = :set_id
+            group by s.set_id, s.title, s.description_set, s.created_at, s.updated_at, s.is_approved, s.is_anonymous, s.sharing_mode, 
+                     a.last_name, a.first_name, a.user_name, a.avatar, c.category_name
             """, nativeQuery = true)
     ISetFlashcardDTO findSetFlashcardsById(@Param("set_id") Long id);
 
