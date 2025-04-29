@@ -278,7 +278,7 @@ public class SetFlashcardController {
         }
     }
 
-        @GetMapping("/filter-by-tag")
+    @GetMapping("/filter-by-tag")
     @PreAuthorize("hasAnyRole('ROLE_FREE_USER', 'ROLE_PREMIUM_USER', 'ROLE_ADMIN')")
     public ResponseEntity<Page<ISetFlashcardDTO>> filterByTagName(
             @RequestParam(value = "tag_name", defaultValue = "") String tagName,

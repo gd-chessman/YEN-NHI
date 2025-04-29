@@ -16,6 +16,10 @@ public interface IMyClassService {
 
     boolean removeFolderFromClass(Long classId, Long folderId);
 
+    boolean addSetToClass(Long classId, Long setId);
+
+    boolean removeSetFromClass(Long classId, Long setId);
+
     List<MyClass> findJoinedClasses(Long userId);
 
     void deleteMyClass(Long myClassId, Long userId);
