@@ -1,8 +1,9 @@
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import React, { useState, useEffect } from 'react';
-import { BiSearch, BiSolidFolder } from 'react-icons/bi';
+import { BiSearch } from 'react-icons/bi';
 import { IoAddOutline, IoSearchOutline, IoShareOutline, IoTrashOutline, IoPeopleOutline } from "react-icons/io5";
+import { SiGoogleclassroom } from "react-icons/si";
 import { useForm } from 'react-hook-form';
 import api from "../../apis/api";
 import { Link } from 'react-router-dom';
@@ -280,13 +281,13 @@ export default function MyClassList() {
                             myClasses.map((myClass) => (
                                 <Link 
                                     key={myClass.myClassId}
-                                    to={`/user/my-class/${myClass.myClassId}/folder`}
+                                    to={`/user/my-class/${myClass.myClassId}/room`}
                                     className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden no-underline"
                                 >
                                     <div className="p-6">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center">
-                                                <BiSolidFolder className="text-[#4f46e5] text-2xl mr-3" />
+                                                <SiGoogleclassroom className="text-[#4f46e5] text-2xl mr-3" />
                                                 <h3 className="text-lg font-medium text-gray-900">{myClass.title}</h3>
                                             </div>
                                             <div className="flex items-center space-x-2">
@@ -378,12 +379,12 @@ export default function MyClassList() {
                         joinedClasses.map((joinedClass) => (
                             <Link 
                                 key={joinedClass.myClassId}
-                                to={`/user/join-class/${joinedClass.myClassId}/folder`}
+                                to={`/user/join-class/${joinedClass.myClassId}/room`}
                                 className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden no-underline"
                             >
                                 <div className="p-6">
                                     <div className="flex items-center">
-                                        <BiSolidFolder className="text-[#4f46e5] text-2xl mr-3" />
+                                        <SiGoogleclassroom className="text-[#4f46e5] text-2xl mr-3" />
                                         <h3 className="text-lg font-medium text-gray-900">{joinedClass.title}</h3>
                                     </div>
                                     <p className="mt-2 text-sm text-gray-500 line-clamp-2">{joinedClass.description}</p>

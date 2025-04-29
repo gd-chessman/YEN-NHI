@@ -7,7 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import api from "../../apis/api";
 import { useParams, Link } from 'react-router-dom';
 
-export default function MyFolderList() {
+export default function MyClassRoom() {
   const [isModal, setIsModal] = useState(false);
   const [isDeleteModal, setIsDeleteModal] = useState(false);
   const [selectedFolder, setSelectedFolder] = useState(null);
@@ -173,7 +173,7 @@ export default function MyFolderList() {
             <div className="flex items-center space-x-4">
               <BiSolidFolder className="text-[#4f46e5] text-3xl" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{classInfo?.title || 'Classroom folder'}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{'Classroom'}</h1>
                 <p className="text-sm text-gray-500">{folders.length} folders</p>
               </div>
             </div>
