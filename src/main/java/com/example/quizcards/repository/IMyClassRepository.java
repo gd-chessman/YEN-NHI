@@ -35,5 +35,5 @@ public interface IMyClassRepository extends JpaRepository<MyClass, Long> {
     @Query("SELECT mc FROM MyClass mc JOIN mc.members m WHERE m.userId = :userId AND mc.owners.userId != :userId AND (mc.title LIKE %:query% OR mc.classCode LIKE %:query%)")
     List<MyClass> findJoinedClassesByUserIdAndNameContainingIgnoreCaseOrClassCodeContainingIgnoreCase(@Param("userId") Long userId, @Param("query") String query, @Param("query") String query2);
 
-    Optional<MyClass> findByMyClassId(Long id);
+    MyClass findByMyClassId(Long id);
 }

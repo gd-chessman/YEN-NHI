@@ -48,7 +48,7 @@ public class MyClassService implements IMyClassService {
 
     @Override
     public Optional<MyClass> findById(Long id) {
-        return iMyClassRepository.findByMyClassId(id);
+        return iMyClassRepository.findById(id);
     }
 
     @Override
@@ -146,5 +146,10 @@ public class MyClassService implements IMyClassService {
     @Override
     public List<MyClass> searchJoinedClasses(Long userId, String query) {
         return iMyClassRepository.findJoinedClassesByUserIdAndNameContainingIgnoreCaseOrClassCodeContainingIgnoreCase(userId, query, query);
+    }
+
+    @Override
+    public MyClass findClassById(Long id) {
+        return iMyClassRepository.findByMyClassId(id);
     }
 }

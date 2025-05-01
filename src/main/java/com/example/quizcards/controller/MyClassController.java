@@ -61,7 +61,7 @@ public class MyClassController {
 
     @GetMapping("/{id}/room")
     public ResponseEntity<?> getClassById(@PathVariable Long id) {
-        Optional<MyClass> myClass = iMyClassService.findById(id);
+        MyClass myClass = iMyClassService.findClassById(id);
         return new ResponseEntity<>(myClass, HttpStatus.OK);
     }
 
@@ -251,6 +251,34 @@ public class MyClassController {
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/{classId}/is-admin")
+    public ResponseEntity<?> isClassAdmin(@PathVariable Long classId) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserPrincipal user = (UserPrincipal) authentication.getPrincipal();
+            Long userId = user.getId();
+
+            Optional<MyClass> myClassOptional = iMyClassService.findById(classId);
+            if (myClassOptional.isPresent()) {
+                MyClass myClass = myClassOptional.get();
+                boolean isAdmin = myClass.getOwners() != null && myClass.getOwners().getUserId().equals(userId);
+                return ResponseEntity.ok(new IsAdminResponse(isAdmin));
+            } else {
+                return new ResponseEntity<>("Class not found", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    private static class IsAdminResponse {
+        private boolean isAdmin;
     }
 
     @Getter

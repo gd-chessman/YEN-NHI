@@ -27,4 +27,6 @@ public interface IMyClassService {
     List<MyClass> searchMyClasses(Long userId, String query);
 
     List<MyClass> searchJoinedClasses(Long userId, String query);
+
+    MyClass findClassById(Long id);
 }
